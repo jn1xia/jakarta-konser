@@ -94,22 +94,25 @@ export function buildPerson(detail, held) {
   return g;
 }
 
-/** A material whose vertices follow the pose function; `glow` is the colour of the held light. */
-export function figureMaterial({ glow = 0xffffff, emissive = 0x000000 } = {}) {
+/**
+ * A material whose vertices follow the pose function. `glow` is the colour of the held light;
+ * `density` is the share of figures whose light is on (the rest hold it dark).
+ */
+export function figureMaterial({ glow = 0xffffff, emissive = 0x000000, density = 1 } = {}) {
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, emissive });
-  const uGlow = { value: new THREE.Color(glow) };
+  const uGlow = { value: new THREE.Color(glow) }, uDensity = { value: density };
   mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uTime = animU.uTime; shader.uniforms.uEnergy = animU.uEnergy; shader.uniforms.uGlow = uGlow;
+    shader.uniforms.uTime = animU.uTime; shader.uniforms.uEnergy = animU.uEnergy; shader.uniforms.uGlow = uGlow; shader.uniforms.uDensity = uDensity;
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', `#include <common>\n${POSE_GLSL}\nattribute vec4 aAnim;\nattribute float aPart;\nattribute float aTint;\nvarying float vTint;`)
+      .replace('#include <common>', `#include <common>\n${POSE_GLSL}\nattribute vec4 aAnim;\nattribute float aPart;\nattribute float aTint;\nuniform float uDensity;\nvarying float vTint;\nvarying float vLit;`)
       .replace('#include <color_vertex>', ['vColor=color;', '#ifdef USE_INSTANCING_COLOR', 'if(aTint>0.5&&aTint<1.5) vColor*=instanceColor;', '#endif',
         'if(aTint>1.5&&aTint<2.5) vColor*=0.62+0.42*fract(aAnim.x*13.7);',
         'if(aTint>3.5) vColor=mix(vec3(0.05,0.04,0.035),vec3(0.62,0.5,0.32),step(0.86,fract(aAnim.x*31.0)));'].join('\n'))
-      .replace('#include <beginnormal_vertex>', 'vec4 pArms,pBody;crowdPose(aAnim,pArms,pBody);vec3 objectNormal=vec3(normal);vec3 posed=position;poseVertex(posed,objectNormal,aPart,pArms,pBody);vTint=aTint;')
+      .replace('#include <beginnormal_vertex>', 'vec4 pArms,pBody;crowdPose(aAnim,pArms,pBody);vec3 objectNormal=vec3(normal);vec3 posed=position;poseVertex(posed,objectNormal,aPart,pArms,pBody);vTint=aTint;vLit=step(aAnim.x,uDensity);')
       .replace('#include <begin_vertex>', 'vec3 transformed=posed;');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying float vTint;\nuniform float uEnergy;\nuniform vec3 uGlow;')
-      .replace('#include <dithering_fragment>', '#include <dithering_fragment>\nif(vTint>2.5&&vTint<3.5) gl_FragColor=vec4(uGlow*(0.55+0.75*uEnergy),1.0);');
+      .replace('#include <common>', '#include <common>\nvarying float vTint;\nvarying float vLit;\nuniform float uEnergy;\nuniform vec3 uGlow;')
+      .replace('#include <dithering_fragment>', '#include <dithering_fragment>\nif(vTint>2.5&&vTint<3.5) gl_FragColor=vec4(mix(vec3(0.03),uGlow*(0.55+0.75*uEnergy),vLit),1.0);');
   };
   mat.userData.uGlow = uGlow;
   return mat;

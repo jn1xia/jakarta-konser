@@ -213,6 +213,29 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await pit.close();
     }
+    {
+      const s = await open('/sim.html?c=gnr-madya-2026&debug');
+      await ready(s.page);
+      await check('crowd: every open place has a fan, and the seat view still draws', async () => {
+        const n = await s.page.evaluate(() => {
+          const j = window.__jk, open = j.model.sections.filter((x) => x.cat !== 'CLOSED');
+          const seated = open.filter((x) => !(x.kind === 'floor' && x.standing)).reduce((a, x) => a + x.rows.reduce((b, r) => b + r.length / 3, 0), 0);
+          return { crowd: j.crowd.count, seated, near: j.crowd.nearCount(), stats: j.pixelStats() };
+        });
+        assert(n.crowd > 5000, `only ${n.crowd} fans`);
+        assert(n.crowd >= n.seated, `${n.crowd} fans for ${n.seated} seats`);
+        assert(n.near > 50, `only ${n.near} jointed fans near the seat`);
+        assert(n.stats.distinct > 50, `only ${n.stats.distinct} colours`);
+        equal(s.errors.join(' | '), '');
+      });
+      await check('crowd: standing up and house lights do not break the view', async () => {
+        const stats = await s.page.evaluate(() => { const j = window.__jk; j.setPosture('stand'); j.setLights('house'); return { stats: j.pixelStats(), eye: j.cam.eyePos.y - j.cam.seatPos.y }; });
+        assert(Math.abs(stats.eye - 1.62) < 0.01, `standing eye height ${stats.eye}`);
+        assert(stats.stats.distinct > 50, `only ${stats.stats.distinct} colours`);
+        equal(s.errors.join(' | '), '');
+      });
+      await s.close();
+    }
     // SIM-CHECKS (later tasks add their checks above this line)
   }
 

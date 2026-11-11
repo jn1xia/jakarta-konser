@@ -9,6 +9,7 @@ import { createScene } from './scene.js';
 import { addStage } from './stage-mesh.js';
 import { animU } from './figures.js';
 import { createCamera } from './camera.js';
+import { addCrowd } from './crowd.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
@@ -71,6 +72,7 @@ function boot() {
   try { ctx = createScene($('#scene'), model); } catch (e) { console.warn(e); showFallback(); return; }
 
   const stageView = addStage(ctx, model, concert);
+  const crowd = addCrowd(ctx, model, concert.sim.theme);
 
   // The seat named in the address, or the default one when it names none (or nonsense)
   const first = resolveSeat(model, params.get('s'), params.get('r'), params.get('n'));
@@ -88,6 +90,7 @@ function boot() {
     if (!sec || sec.cat === 'CLOSED') return;
     const r = Math.max(0, Math.min(sec.rows.length - 1, row)), n = Math.max(0, Math.min(sec.rows[r].length / 3 - 1, seat));
     cam.setSeat(sec, r, n, look);
+    crowd.setSeat(cam.seatPos);
     writeAddress();
     if (go && state.mode !== 'pov') setMode('pov', true);
   }
@@ -95,14 +98,21 @@ function boot() {
     cam.setMode(mode, fly);
     setLights(state.lights);
   }
+  /** Seated or standing, for you and everyone around you. A standing block always stands. */
+  function setPosture(posture) {
+    cam.setPosture(posture);
+    crowd.setPosture(state.posture);
+  }
   /** Show or House lights, for the venue, the stage and (later) the crowd together. */
   function setLights(mode) {
     state.lights = mode === 'house' ? 'house' : 'show';
     ctx.setLights(state.lights, state.mode === 'overview');
     stageView.setLights(state.lights);
+    crowd.setLights(state.lights);
     animU.uEnergy.value = state.lights === 'house' ? 0 : 1;
   }
   cam.setSeat(state.sec, state.row, state.seat);
+  crowd.setSeat(cam.seatPos);
   setMode('pov', false);
   cam.bind($('#scene'), { onPick: (sec, row, seat) => selectSeat(sec, row, seat, { go: true }) });
 
@@ -117,6 +127,7 @@ function boot() {
     const time = clock.getElapsedTime();
     animU.uTime.value = time;
     stageView.update(time);
+    crowd.update();
     cam.apply(performance.now());
     ctx.render();
   }
@@ -125,7 +136,7 @@ function boot() {
 
   if (debug) {
     window.__jk = {
-      ready: true, model, ctx, state, cam, setLights, setMode, selectSeat,
+      ready: true, model, ctx, state, cam, crowd, setLights, setMode, setPosture, selectSeat,
       /** Draws one frame and counts the different colours on a 64 x 64 grid of its pixels. */
       pixelStats() {
         cam.apply(performance.now()); ctx.render();

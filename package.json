@@ -1,0 +1,11 @@
+{
+  "name": "jakarta-konser",
+  "private": true,
+  "type": "module",
+  "description": "Unofficial 3D seat-view simulators for upcoming Jakarta concerts",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "e2e": "node tests/e2e/smoke.cjs",
+    "serve": "python3 -m http.server 8000"
+  }
+}

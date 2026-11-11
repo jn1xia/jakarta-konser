@@ -1,7 +1,7 @@
 'use strict';
 // Browser test. Serves the repository from a local server, opens the pages in headless
-// Chromium and runs named checks. Run with `npm run e2e`; add `--only=hub` (or sim, links)
-// to run one group. Requests to other hosts are blocked, so the test never needs the network.
+// Chromium and runs named checks. Run with `npm run e2e`; add `--only=hub` (or sim, or a part
+// of sim: venues, stage, seat, crowd, panel, links) to run one group. Requests to other hosts are blocked, so the test never needs the network.
 
 const http = require('http');
 const fs = require('fs');
@@ -13,6 +13,8 @@ const ROOT = path.resolve(__dirname, '../..');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
 const only = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);
 const wants = (group) => !only || only.split(',').includes(group);
+// Parts of the simulator group, so one part can be run alone: --only=venues,stage,seat,crowd,panel,links
+const part = (name) => wants('sim') || wants(name);
 
 function serve() {
   const server = http.createServer((req, res) => {
@@ -130,11 +132,11 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
     await phone.close();
   }
 
-  if (wants('sim')) {
+  if (['sim', 'venues', 'stage', 'seat', 'crowd', 'panel', 'links'].some(wants)) {
     const engine = CONCERTS.filter((c) => c.sim && !c.sim.external);
     const ready = (page) => page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
 
-    for (const c of engine) {
+    for (const c of part('venues') ? engine : []) {
       const s = await open(`/sim.html?c=${c.id}&debug`);
       await check(`sim ${c.id}: loads and draws the venue`, async () => {
         await ready(s.page);
@@ -144,7 +146,7 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await s.close();
     }
-    {
+    if (part('stage')) {
       const s = await open('/sim.html?c=enhypen-jis-2027&debug');
       await ready(s.page);
       await check('sim: the stage, screens, sound desk and towers are built and can block a view', async () => {
@@ -162,7 +164,7 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await s.close();
     }
-    {
+    if (part('seat')) {
       const seat = (page) => page.evaluate(() => { const j = window.__jk; return { sec: j.state.sec.id, row: j.state.row, seat: j.state.seat, mode: j.state.mode }; });
       const dflt = (page) => page.evaluate(() => { const d = window.__jk.model.defaultSeat; return { sec: d.sec.id, row: d.row, seat: d.seat }; });
       const plain = await open('/sim.html?c=enhypen-jis-2027&debug');
@@ -213,7 +215,7 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await pit.close();
     }
-    {
+    if (part('crowd')) {
       const s = await open('/sim.html?c=gnr-madya-2026&debug');
       await ready(s.page);
       await check('crowd: every open place has a fan, and the seat view still draws', async () => {
@@ -235,6 +237,86 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
         equal(s.errors.join(' | '), '');
       });
       await s.close();
+    }
+    if (part('panel')) {
+      const s = await open('/sim.html?c=enhypen-jis-2027&debug');
+      await ready(s.page);
+      const text = (sel) => s.page.$eval(sel, (e) => e.textContent.trim());
+      await check('panel: shows the seat, its category, its price and seven facts', async () => {
+        assert((await text('#nowCat')).includes('CAT'), `chip reads "${await text('#nowCat')}"`);
+        assert((await text('#nowPrice')).startsWith('Rp'), `price reads "${await text('#nowPrice')}"`);
+        assert((await text('#nowTitle')).includes('Sektor'), `title reads "${await text('#nowTitle')}"`);
+        equal(await s.page.$$eval('#stats > div', (els) => els.length), 7, 'seat facts');
+        const facts = await text('#stats');
+        assert(/\d+ m/.test(facts) && !/NaN|undefined|Infinity/.test(facts), `facts read "${facts}"`);
+        assert((await text('#verdict')).length > 20, 'no verdict line');
+        equal(await s.page.$$eval('#catList .cat', (els) => els.length), 9, 'categories in the legend');
+        assert(await s.page.$eval('#map', (e) => e.querySelectorAll('.sec').length > 60), 'the map has no sections');
+      });
+      await check('panel: the section list moves the seat and the address', async () => {
+        await s.page.selectOption('#secSel', 'M-05');
+        equal(await s.page.evaluate(() => window.__jk.state.sec.id), 'M-05');
+        equal(new URL(s.page.url()).searchParams.get('s'), 'M-05');
+        assert((await text('#nowCat')).includes('CAT 3'), `chip reads "${await text('#nowCat')}"`);
+        await s.page.$eval('#rowIn', (e) => { e.value = '2'; e.dispatchEvent(new Event('input', { bubbles: true })); });
+        equal(await s.page.evaluate(() => window.__jk.state.row), 1, 'row slider');
+        equal(new URL(s.page.url()).searchParams.get('r'), '2');
+      });
+      await check('panel: clicking the map sits in that section', async () => {
+        await s.page.$eval('#map .sec[data-id="U-04"]', (e) => e.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+        equal(await s.page.evaluate(() => window.__jk.state.sec.id), 'U-04');
+        assert(await s.page.$eval('#map .sec[data-id="U-04"]', (e) => e.classList.contains('on')), 'the map does not mark the chosen section');
+      });
+      await check('panel: the dock switches view, lights and posture', async () => {
+        await s.page.click('#btn-over');
+        equal(await s.page.evaluate(() => window.__jk.state.mode), 'overview');
+        equal(await s.page.$eval('#btn-over', (e) => e.getAttribute('aria-pressed')), 'true');
+        assert(await s.page.$eval('[data-zoom="2"]', (e) => e.disabled), 'zoom should be off in the whole-venue view');
+        await s.page.click('#btn-pov'); await s.page.click('#btn-house'); await s.page.click('#btn-stand'); await s.page.click('[data-zoom="2"]');
+        const st = await s.page.evaluate(() => { const j = window.__jk.state; return `${j.mode}/${j.lights}/${j.posture}/${j.zoom}`; });
+        equal(st, 'pov/house/stand/2');
+      });
+      await check('panel: the language button changes every label', async () => {
+        equal(await text('#accuracy'), 'Estimasi'); equal(await text('#btn-pov'), 'Kursiku');
+        await s.page.click('#lang');
+        equal(await text('#accuracy'), 'Estimate'); equal(await text('#btn-pov'), 'My seat');
+        assert((await text('#nowTitle')).includes('Sector'), `title reads "${await text('#nowTitle')}"`);
+        assert((await text('#h-cats')) === 'Ticket categories', 'legend heading not translated');
+        await s.page.click('#lang');
+        equal(s.errors.join(' | '), '');
+      });
+      await s.close();
+
+      const m5 = await open('/sim.html?c=maroon5-jis-2027&debug');
+      await ready(m5.page);
+      await check('panel: an unknown price says so and never shows Rp0 or NaN', async () => {
+        equal(await m5.page.$eval('#nowPrice', (e) => e.textContent.trim()), 'Harga belum diumumkan');
+        const all = await m5.page.$eval('#panel', (e) => e.textContent);
+        assert(all.split('Harga belum diumumkan').length > 3, 'the legend does not say the price is not announced');
+        assert(!/Rp0\b|NaN|undefined|null/.test(all), 'found Rp0, NaN, undefined or null in the panel');
+        equal(m5.errors.join(' | '), '');
+      });
+      await m5.close();
+
+      const ph = await open('/sim.html?c=thescript-indonesia-arena-2027&debug', { width: 390, height: 844 });
+      await ready(ph.page);
+      await check('panel: on a phone it is a bottom sheet that opens and closes', async () => {
+        const over = await ph.page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        assert(over <= 0, `page is ${over}px wider than the screen`);
+        const box = async () => ph.page.$eval('#panel', (e) => e.getBoundingClientRect().height);
+        const closed = await box();
+        assert(closed < 844 * 0.45, `the closed sheet covers ${Math.round(closed)}px of the view`);
+        await ph.page.click('#sheetToggle');
+        const opened = await box();
+        assert(opened > closed + 80, 'the sheet did not open');
+        equal(await ph.page.$eval('#sheetToggle', (e) => e.getAttribute('aria-expanded')), 'true');
+        await ph.page.click('#sheetToggle');
+        assert((await box()) < opened, 'the sheet did not close');
+        const stats = await ph.page.evaluate(() => window.__jk.pixelStats());
+        assert(stats.distinct > 50, 'the canvas is blank on a phone');
+        equal(ph.errors.join(' | '), '');
+      });
+      await ph.close();
     }
     // SIM-CHECKS (later tasks add their checks above this line)
   }

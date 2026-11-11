@@ -13,8 +13,8 @@ export default {
   capacitySource: 'https://en.wikipedia.org/wiki/Gelora_Bung_Karno_Stadium',
   outline: fourCentredOval(66, 90.5, 45),
   tiers: [
-    { id: 'L', name: { id: 'Bawah', en: 'Lower' }, d0: 0.6, y0: 1.5, rows: 38, depth: 0.85, rake: 20 },
-    { id: 'U', name: { id: 'Atas', en: 'Upper' }, d0: 36.3, y0: 15.6, rows: 25, depth: 0.85, rake: 33 }
+    { id: 'L', name: { id: 'Tribune Bawah', en: 'Lower Tier' }, d0: 0.6, y0: 1.5, rows: 38, depth: 0.85, rake: 20 },
+    { id: 'U', name: { id: 'Tribune Atas', en: 'Upper Tier' }, d0: 36.3, y0: 15.6, rows: 25, depth: 0.85, rake: 33 }
   ],
   sectors: 24,
   floor: { halfX: 50, halfZ: 74 },

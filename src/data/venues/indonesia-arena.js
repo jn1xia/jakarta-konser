@@ -12,8 +12,8 @@ export default {
   capacitySource: 'https://goodstats.id/article/inilah-indonesia-arena-venue-indoor-mewah-terbesar-milik-indonesia-3VFYE',
   outline: roundedRect(20, 31, 8),
   tiers: [
-    { id: 'L', name: { id: 'Bawah', en: 'Lower' }, d0: 0.6, y0: 1.2, rows: 18, depth: 0.85, rake: 26 },
-    { id: 'U', name: { id: 'Atas', en: 'Upper' }, d0: 18.4, y0: 11.5, rows: 13, depth: 0.85, rake: 34 }
+    { id: 'L', name: { id: 'Tribune Bawah', en: 'Lower Tier' }, d0: 0.6, y0: 1.2, rows: 18, depth: 0.85, rake: 26 },
+    { id: 'U', name: { id: 'Tribune Atas', en: 'Upper Tier' }, d0: 18.4, y0: 11.5, rows: 13, depth: 0.85, rake: 34 }
   ],
   sectors: 24,
   floor: { halfX: 19, halfZ: 30 },

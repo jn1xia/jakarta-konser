@@ -86,6 +86,12 @@ export function createCamera(ctx, model, state) {
     else { ctx.setRoof(false); flyTo(overviewPose(), fly ? 1.5 : 0); }
   }
   const setZoom = (z) => { state.zoom = clamp(z, 1, 6); };
+  /** In My seat view, moves the eye to the newly chosen seat: a short glide, or at once. */
+  function glide(instant) {
+    if (state.mode !== 'pov') return;
+    const far = camera.position.distanceTo(eyePos);
+    flyTo(povPose(), instant ? 0 : clamp(0.35 + far / 160, 0.35, 1.6));
+  }
   function setPosture(p) { state.posture = p === 'stand' ? 'stand' : 'sit'; place(); }
 
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -199,5 +205,5 @@ export function createCamera(ctx, model, state) {
     });
   }
 
-  return { eyePos, seatPos, view, standing, setSeat, setMode, setZoom, setPosture, lookAtStage, apply, pick, nearestSeat, bind };
+  return { eyePos, seatPos, view, standing, setSeat, setMode, setZoom, setPosture, glide, lookAtStage, apply, pick, nearestSeat, bind };
 }

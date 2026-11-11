@@ -34,14 +34,10 @@ const cats = (...list) => list.map((c, i) => ({ kind: 'seat', ...c, color: PALET
  */
 function fallback(venueId, standingFloor) {
   const tiers = VENUES[venueId].tiers;
-  const tierName = (n) => ({
-    id: n.id.startsWith('Tribune') ? n.id : `Tribune ${n.id}`,
-    en: /Stand$/.test(n.en) ? n.en : `${n.en} Tier`
-  });
   return {
     categories: cats(
       { id: 'FLOOR', name: { id: 'Lantai', en: 'Floor' }, price: null, kind: standingFloor ? 'standing' : 'seat' },
-      ...tiers.map((t) => ({ id: `T-${t.id}`, name: tierName(t.name), price: null }))
+      ...tiers.map((t) => ({ id: `T-${t.id}`, name: t.name, price: null }))
     ),
     floor: [{ depth: 1, blocks: ['FLOOR'], standing: standingFloor }],
     stands: tiers.map((t) => ({ tier: t.id, cat: `T-${t.id}` }))

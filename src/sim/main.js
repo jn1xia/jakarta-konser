@@ -10,6 +10,8 @@ import { addStage } from './stage-mesh.js';
 import { animU } from './figures.js';
 import { createCamera } from './camera.js';
 import { addCrowd } from './crowd.js';
+import { computeFacts } from './facts.js';
+import { createPanel } from './panel.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
@@ -78,6 +80,16 @@ function boot() {
   const first = resolveSeat(model, params.get('s'), params.get('r'), params.get('n'));
   const state = { ...first, mode: 'pov', lights: 'show', posture: 'sit', zoom: 1 };
   const cam = createCamera(ctx, model, state);
+  let panel = null, lit = null;
+
+  /** Recomputes the seat facts and redraws the panel and the highlighted section. */
+  function refresh() {
+    if (panel) panel.update(state, computeFacts(ctx, model, cam.eyePos), cam.seatPos);
+    const mesh = ctx.meshOf.get(state.sec) || null;
+    if (lit && lit !== mesh) lit.material.emissive.setHex(0x000000);
+    if (mesh) mesh.material.emissive.set(model.cats[state.sec.cat].color).multiplyScalar(0.28);
+    lit = mesh;
+  }
 
   /** Keeps the chosen seat in the address, so the exact view can be shared. */
   function writeAddress() {
@@ -85,39 +97,75 @@ function boot() {
     q.set('s', state.sec.id); q.set('r', state.row + 1); q.set('n', state.seat + 1);
     history.replaceState(null, '', `${location.pathname}?${q}${location.hash}`);
   }
-  /** Sits in a seat. `go` flies there from the whole-venue view. */
-  function selectSeat(sec, row, seat, { go = false, look = true } = {}) {
+
+  /**
+   * Sits in a seat. A missing row or seat means "a fair one": a little way up, in the middle.
+   * `go` flies there from the whole-venue view; `instant` skips the glide between seats.
+   */
+  function selectSeat(sec, row, seat, { go = false, instant = false, keepSide = false } = {}) {
     if (!sec || sec.cat === 'CLOSED') return;
-    const r = Math.max(0, Math.min(sec.rows.length - 1, row)), n = Math.max(0, Math.min(sec.rows[r].length / 3 - 1, seat));
-    cam.setSeat(sec, r, n, look);
+    const missing = (v) => v === null || v === undefined;
+    const rows = sec.rows.length;
+    const r = Math.max(0, Math.min(rows - 1, missing(row) ? Math.floor(rows * (sec.kind === 'stand' ? 0.4 : 0.35)) : row));
+    const count = sec.rows[r].length / 3;
+    let n = missing(seat) ? Math.floor(count / 2) : seat;
+    if (keepSide && sec === state.sec && missing(seat)) {      // stay the same way along the row
+      const before = state.sec.rows[state.row].length / 3;
+      n = Math.round((state.seat / Math.max(1, before - 1)) * (count - 1));
+    }
+    cam.setSeat(sec, r, Math.max(0, Math.min(count - 1, n)));
     crowd.setSeat(cam.seatPos);
     writeAddress();
+    refresh();
     if (go && state.mode !== 'pov') setMode('pov', true);
+    else cam.glide(instant);
   }
-  function setMode(mode, fly) {
-    cam.setMode(mode, fly);
-    setLights(state.lights);
-  }
-  /** Seated or standing, for you and everyone around you. A standing block always stands. */
-  function setPosture(posture) {
-    cam.setPosture(posture);
-    crowd.setPosture(state.posture);
-  }
-  /** Show or House lights, for the venue, the stage and (later) the crowd together. */
+
+  /** Show or House lights, for the venue, the stage and the crowd together. */
   function setLights(mode) {
     state.lights = mode === 'house' ? 'house' : 'show';
     ctx.setLights(state.lights, state.mode === 'overview');
     stageView.setLights(state.lights);
     crowd.setLights(state.lights);
     animU.uEnergy.value = state.lights === 'house' ? 0 : 1;
+    if (panel) panel.sync(state);
   }
+  function setMode(mode, fly) {
+    cam.setMode(mode, fly);
+    setLights(state.lights);
+    if (panel) panel.showTip(null);
+  }
+  /** Seated or standing, for you and everyone around you. A standing block always stands. */
+  function setPosture(posture) {
+    cam.setPosture(posture);
+    crowd.setPosture(state.posture);
+    refresh();
+  }
+  function setZoom(zoom) {
+    cam.setZoom(zoom);
+    if (panel) panel.sync(state);
+  }
+
+  panel = createPanel(model, concert, {
+    onSeat: selectSeat,
+    onMode: (mode) => { if (mode !== state.mode) setMode(mode, true); },
+    onZoom: setZoom,
+    onLights: setLights,
+    onPosture: setPosture
+  });
+
   cam.setSeat(state.sec, state.row, state.seat);
   crowd.setSeat(cam.seatPos);
   setMode('pov', false);
-  cam.bind($('#scene'), { onPick: (sec, row, seat) => selectSeat(sec, row, seat, { go: true }) });
+  refresh();
+  cam.bind($('#scene'), {
+    onPick: (sec, row, seat) => selectSeat(sec, row, seat, { go: true }),
+    onChange: () => panel.sync(state),
+    onHover: (sec, x, y) => panel.showTip(sec, x, y)
+  });
 
   drawBrand(concert, venueDef);
-  document.addEventListener('langchange', () => drawBrand(concert, venueDef));
+  document.addEventListener('langchange', () => { drawBrand(concert, venueDef); panel.relabel(); refresh(); });
   $('#brand').hidden = false;
 
   addEventListener('resize', ctx.resize);
@@ -136,7 +184,7 @@ function boot() {
 
   if (debug) {
     window.__jk = {
-      ready: true, model, ctx, state, cam, crowd, setLights, setMode, setPosture, selectSeat,
+      ready: true, model, ctx, state, cam, crowd, panel, setLights, setMode, setPosture, setZoom, selectSeat,
       /** Draws one frame and counts the different colours on a 64 x 64 grid of its pixels. */
       pixelStats() {
         cam.apply(performance.now()); ctx.render();

@@ -130,6 +130,23 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
     await phone.close();
   }
 
+  if (wants('sim')) {
+    const engine = CONCERTS.filter((c) => c.sim && !c.sim.external);
+    const ready = (page) => page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+
+    for (const c of engine) {
+      const s = await open(`/sim.html?c=${c.id}&debug`);
+      await check(`sim ${c.id}: loads and draws the venue`, async () => {
+        await ready(s.page);
+        const stats = await s.page.evaluate(() => window.__jk.pixelStats());
+        assert(stats.distinct > 50, `only ${stats.distinct} colours on the canvas`);
+        equal(s.errors.join(' | '), '');
+      });
+      await s.close();
+    }
+    // SIM-CHECKS (later tasks add their checks above this line)
+  }
+
   await browser.close();
   server.close();
   console.log(`\n${passed} passed, ${failed} failed`);

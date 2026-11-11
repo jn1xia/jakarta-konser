@@ -1,0 +1,88 @@
+/* Jakarta Konser. One dark look on purpose: these are night shows. The palette and type follow
+   the BTS and BIGBANG seat-view sites; the accent is stage-light yellow with black type on it,
+   set like gaffer tape. */
+:root{
+  --void:#07070a;
+  --panel:rgba(12,11,14,.9);
+  --panel-solid:#0c0b0e;
+  --card:#101014;
+  --line:rgba(236,232,236,.13);
+  --line-strong:rgba(236,232,236,.32);
+  --ink:#f1eef0;
+  --muted:#9d97a2;
+  --accent:#ffd84a;
+  --accent-ink:#0b0a0c;
+  --f-display:"Archivo","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--void);color:var(--ink);font:400 15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,select,input{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+p,h1,h2,h3{margin:0}
+
+.tape{display:inline-block;background:var(--accent);color:var(--accent-ink);font:900 1em/1 var(--f-display);font-stretch:75%;text-transform:uppercase;letter-spacing:.01em;padding:.16em .34em .1em}
+.tape-2{background:var(--ink);margin-left:-.12em;transform:rotate(-1.6deg) translateY(.08em)}
+.lang{appearance:none;border:1px solid var(--line-strong);background:transparent;border-radius:999px;padding:5px 12px;font:500 12px/1 var(--f-data);letter-spacing:.08em;cursor:pointer}
+.lang:hover{border-color:var(--ink)}
+.chip{display:inline-block;border:1px solid var(--line-strong);border-radius:999px;padding:1px 8px;font:500 11px/1.5 var(--f-data);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+
+/* ---------- Hub ---------- */
+.hub{min-height:100vh;background:
+  radial-gradient(1200px 520px at 50% -180px,rgba(255,216,74,.13),transparent 70%),
+  radial-gradient(900px 400px at 85% -120px,rgba(120,150,255,.08),transparent 70%),var(--void)}
+.hub-head,.hub-main,.hub-foot{width:min(1120px,100%);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.hub-head{padding-top:22px;padding-bottom:26px}
+.hub-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{text-decoration:none;font-size:22px;white-space:nowrap}
+.hub-title{margin-top:44px;max-width:16ch;font:800 clamp(34px,7vw,68px)/.98 var(--f-display);font-stretch:68%;text-transform:uppercase;letter-spacing:-.005em;text-wrap:balance}
+.hub-sub{margin-top:14px;max-width:56ch;color:var(--muted);font-size:16px}
+.hub-meta{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px 16px;font:500 12px/1.5 var(--f-data);color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.visitors{display:inline-flex;align-items:center;gap:7px}
+.visitors i{width:6px;height:6px;border-radius:50%;background:#5ad19a;box-shadow:0 0 8px #5ad19a}
+
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px}
+.check{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.check input{width:16px;height:16px;accent-color:var(--accent)}
+.pick{display:inline-flex;align-items:center;gap:8px;color:var(--muted);min-width:0}
+.pick select{background:var(--panel-solid);border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;color:var(--ink);max-width:min(280px,62vw)}
+
+.month{margin-top:34px}
+.month-name{font:800 26px/1 var(--f-display);font-stretch:70%;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);display:flex;align-items:center;gap:14px}
+.month-name::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+
+.card{position:relative;display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;min-width:0}
+.card.has-sim{border-color:rgba(255,216,74,.34)}
+.card.has-sim:hover,.card.has-sim:focus-within{border-color:var(--accent)}
+.card.is-target{box-shadow:0 0 0 2px var(--accent)}
+.card-when{display:flex;justify-content:space-between;gap:10px;font:500 12px/1.4 var(--f-data);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.dday{color:var(--accent);white-space:nowrap}
+.card-title{font:800 25px/1.04 var(--f-display);font-stretch:74%;text-transform:uppercase;letter-spacing:.005em;overflow-wrap:anywhere}
+.card-title a{text-decoration:none}
+.card-title a::after{content:"";position:absolute;inset:0;border-radius:10px}   /* the whole card is the link */
+.card-tour{color:var(--muted);font-size:13.5px;overflow-wrap:anywhere}
+.card-where{margin-top:6px;display:flex;flex-direction:column;font-size:14px}
+.card-where .promoter{color:var(--muted);font-size:12.5px}
+.card-price{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:500 13px/1.5 var(--f-data);color:var(--ink)}
+.card-foot{margin-top:auto;padding-top:10px;border-top:1px dashed var(--line-strong);display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:12.5px}
+.badge{font:500 11px/1.5 var(--f-data);text-transform:uppercase;letter-spacing:.07em;padding:1px 8px;border-radius:4px;background:rgba(236,232,236,.09);color:var(--muted)}
+.badge[data-kind="3d"]{background:var(--accent);color:var(--accent-ink)}
+.card-foot .note{color:var(--muted)}
+.card-foot .open{position:relative;margin-left:auto;font-weight:600;text-decoration:none;color:var(--accent)}
+.card-foot .open:hover{text-decoration:underline}
+
+.empty{margin:56px 0;text-align:center;color:var(--muted);font-size:16px}
+.hub-foot{margin-top:56px;padding-top:18px;padding-bottom:max(28px,env(safe-area-inset-bottom));border-top:1px solid var(--line);color:var(--muted);font-size:12.5px;display:grid;gap:8px}
+.hub-foot p{max-width:86ch}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .hub-title{margin-top:30px}
+  .month-name{font-size:22px}
+}

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jakarta Konser · Simulasi View Kursi 3D</title>
+<meta name="description" content="Simulasi 3D tidak resmi untuk konser-konser di Jakarta: pilih konser, pilih kursi, dan lihat panggung dari tempat dudukmu sebelum hari-H.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jakarta Konser · Simulasi View Kursi 3D">
+<meta property="og:description" content="Cek view dari kursimu sebelum konser. Simulasi 3D tidak resmi untuk konser-konser di Jakarta.">
+<meta name="theme-color" content="#07070a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2307070a'/%3E%3Cpath d='M5 21a11 11 0 0 1 22 0' fill='none' stroke='%23ffd84a' stroke-width='3'/%3E%3Crect x='12' y='20' width='8' height='5' rx='1' fill='%23f1eef0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body class="hub">
+
+<header class="hub-head">
+  <div class="hub-top">
+    <a class="logo" href="./"><span class="tape">Jakarta</span><span class="tape tape-2">Konser</span></a>
+    <button type="button" class="lang" id="lang"></button>
+  </div>
+  <h1 class="hub-title" id="tagline"></h1>
+  <p class="hub-sub" id="sub"></p>
+  <p class="hub-meta"><span id="count"></span><span class="visitors" id="visitors" hidden><i></i><span id="visitorText"></span></span></p>
+</header>
+
+<main class="hub-main">
+  <form class="filters" id="filters">
+    <label class="check"><input type="checkbox" id="f3d"><span id="f3dLabel"></span></label>
+    <label class="pick"><span id="fvenueLabel"></span><select id="fvenue"></select></label>
+  </form>
+  <div id="list"></div>
+  <p class="empty" id="empty" hidden></p>
+</main>
+
+<footer class="hub-foot">
+  <p id="fine"></p>
+  <p><span id="checked"></span> <a id="sources" href="https://github.com/jn1xia/jakarta-konser/blob/main/docs/research/jakarta-concerts-2026-2027.md" target="_blank" rel="noopener"></a></p>
+</footer>
+
+<script type="module" src="src/hub.js"></script>
+</body>
+</html>

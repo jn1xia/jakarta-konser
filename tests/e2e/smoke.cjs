@@ -162,6 +162,57 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await s.close();
     }
+    {
+      const seat = (page) => page.evaluate(() => { const j = window.__jk; return { sec: j.state.sec.id, row: j.state.row, seat: j.state.seat, mode: j.state.mode }; });
+      const dflt = (page) => page.evaluate(() => { const d = window.__jk.model.defaultSeat; return { sec: d.sec.id, row: d.row, seat: d.seat }; });
+      const plain = await open('/sim.html?c=enhypen-jis-2027&debug');
+      await ready(plain.page);
+      await check('seat: opens on the default seat, in My seat view, looking at the stage', async () => {
+        const now = await seat(plain.page), d = await dflt(plain.page);
+        equal(`${now.sec}/${now.row}/${now.seat}`, `${d.sec}/${d.row}/${d.seat}`); equal(now.mode, 'pov');
+        const facing = await plain.page.evaluate(() => { const c = window.__jk.ctx.camera, v = new THREE.Vector3(); c.getWorldDirection(v); return { z: v.z, eyeY: c.position.y, seatY: window.__jk.cam.seatPos.y }; });
+        assert(facing.z < -0.8, `camera is not facing the stage end (direction z ${facing.z})`);
+        assert(Math.abs(facing.eyeY - facing.seatY - 1.18) < 0.01, 'seated eye height is not 1.18 m');
+      });
+      await check('seat: choosing a seat writes it into the address, and that address restores it', async () => {
+        await plain.page.evaluate(() => window.__jk.selectSeat(window.__jk.model.byId['U-03'], 3, 5));
+        const url = new URL(plain.page.url());
+        equal(url.searchParams.get('s'), 'U-03'); equal(url.searchParams.get('r'), '4'); equal(url.searchParams.get('n'), '6');
+        equal(url.searchParams.get('c'), 'enhypen-jis-2027'); assert(url.searchParams.has('debug'), 'debug was dropped from the address');
+        await plain.page.reload(); await ready(plain.page);
+        const now = await seat(plain.page);
+        equal(`${now.sec}/${now.row}/${now.seat}`, 'U-03/3/5');
+        equal(plain.errors.join(' | '), '');
+      });
+      await check('seat: the whole-venue view and back again', async () => {
+        await plain.page.evaluate(() => window.__jk.setMode('overview', false));
+        const high = await plain.page.evaluate(() => window.__jk.ctx.camera.position.y);
+        assert(high > 60, `overview camera is only ${high} m up`);
+        const picked = await plain.page.evaluate(() => { const j = window.__jk, r = j.ctx.renderer.domElement.getBoundingClientRect(); const h = j.cam.pick(r.left + r.width * 0.45, r.top + r.height * 0.55); return h ? h.sec.id : null; });
+        assert(picked, 'clicking the middle of the venue hits no section');
+        await plain.page.evaluate(() => window.__jk.setMode('pov', false));
+        const low = await plain.page.evaluate(() => { const j = window.__jk; return Math.abs(j.ctx.camera.position.y - j.cam.eyePos.y); });
+        assert(low < 0.01, 'camera did not return to the seat');
+      });
+      await plain.close();
+
+      const junk = await open('/sim.html?c=enhypen-jis-2027&debug&s=ZZ&r=999&n=-3');
+      await ready(junk.page);
+      await check('seat: garbage seat values in the address fall back to the default seat', async () => {
+        const now = await seat(junk.page), d = await dflt(junk.page);
+        equal(`${now.sec}/${now.row}/${now.seat}`, `${d.sec}/${d.row}/${d.seat}`);
+        equal(junk.errors.join(' | '), '');
+      });
+      await junk.close();
+
+      const pit = await open('/sim.html?c=enhypen-jis-2027&debug&s=F1-A&r=1&n=10');
+      await ready(pit.page);
+      await check('seat: a standing floor block always stands', async () => {
+        const h = await pit.page.evaluate(() => { const j = window.__jk; return j.cam.eyePos.y - j.cam.seatPos.y; });
+        assert(Math.abs(h - 1.62) < 0.01, `eye height ${h}`);
+      });
+      await pit.close();
+    }
     // SIM-CHECKS (later tasks add their checks above this line)
   }
 

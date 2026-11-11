@@ -2,12 +2,13 @@
 
 import { CONCERT_BY_ID } from '../data/concerts.js';
 import { VENUES } from '../data/venues/index.js';
-import { buildModel } from '../engine/model.js';
+import { buildModel, resolveSeat } from '../engine/model.js';
 import { jakartaToday, nextDate, dday } from '../engine/calendar.js';
 import { initLang, getLang, setLang, t, fmtDates } from '../i18n.js';
 import { createScene } from './scene.js';
 import { addStage } from './stage-mesh.js';
 import { animU } from './figures.js';
+import { createCamera } from './camera.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
@@ -71,7 +72,29 @@ function boot() {
 
   const stageView = addStage(ctx, model, concert);
 
-  const state = { ...model.defaultSeat, mode: 'overview', lights: 'show', posture: 'sit', zoom: 1 };
+  // The seat named in the address, or the default one when it names none (or nonsense)
+  const first = resolveSeat(model, params.get('s'), params.get('r'), params.get('n'));
+  const state = { ...first, mode: 'pov', lights: 'show', posture: 'sit', zoom: 1 };
+  const cam = createCamera(ctx, model, state);
+
+  /** Keeps the chosen seat in the address, so the exact view can be shared. */
+  function writeAddress() {
+    const q = new URLSearchParams(location.search);
+    q.set('s', state.sec.id); q.set('r', state.row + 1); q.set('n', state.seat + 1);
+    history.replaceState(null, '', `${location.pathname}?${q}${location.hash}`);
+  }
+  /** Sits in a seat. `go` flies there from the whole-venue view. */
+  function selectSeat(sec, row, seat, { go = false, look = true } = {}) {
+    if (!sec || sec.cat === 'CLOSED') return;
+    const r = Math.max(0, Math.min(sec.rows.length - 1, row)), n = Math.max(0, Math.min(sec.rows[r].length / 3 - 1, seat));
+    cam.setSeat(sec, r, n, look);
+    writeAddress();
+    if (go && state.mode !== 'pov') setMode('pov', true);
+  }
+  function setMode(mode, fly) {
+    cam.setMode(mode, fly);
+    setLights(state.lights);
+  }
   /** Show or House lights, for the venue, the stage and (later) the crowd together. */
   function setLights(mode) {
     state.lights = mode === 'house' ? 'house' : 'show';
@@ -79,7 +102,9 @@ function boot() {
     stageView.setLights(state.lights);
     animU.uEnergy.value = state.lights === 'house' ? 0 : 1;
   }
-  setLights(state.lights);
+  cam.setSeat(state.sec, state.row, state.seat);
+  setMode('pov', false);
+  cam.bind($('#scene'), { onPick: (sec, row, seat) => selectSeat(sec, row, seat, { go: true }) });
 
   drawBrand(concert, venueDef);
   document.addEventListener('langchange', () => drawBrand(concert, venueDef));
@@ -92,6 +117,7 @@ function boot() {
     const time = clock.getElapsedTime();
     animU.uTime.value = time;
     stageView.update(time);
+    cam.apply(performance.now());
     ctx.render();
   }
   requestAnimationFrame(frame);
@@ -99,10 +125,10 @@ function boot() {
 
   if (debug) {
     window.__jk = {
-      ready: true, model, ctx, state, setLights,
+      ready: true, model, ctx, state, cam, setLights, setMode, selectSeat,
       /** Draws one frame and counts the different colours on a 64 x 64 grid of its pixels. */
       pixelStats() {
-        ctx.render();
+        cam.apply(performance.now()); ctx.render();
         const gl = ctx.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
         const px = new Uint8Array(w * h * 4);
         gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);

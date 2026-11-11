@@ -6,10 +6,13 @@ import { buildModel } from '../engine/model.js';
 import { jakartaToday, nextDate, dday } from '../engine/calendar.js';
 import { initLang, getLang, setLang, t, fmtDates } from '../i18n.js';
 import { createScene } from './scene.js';
+import { addStage } from './stage-mesh.js';
+import { animU } from './figures.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
 const debug = params.has('debug');
+const THREE = window.THREE;
 
 /** Replaces the simulator with a short message and a way back to the concert list. */
 function showMessage(key) {
@@ -66,16 +69,29 @@ function boot() {
   let ctx;
   try { ctx = createScene($('#scene'), model); } catch (e) { console.warn(e); showFallback(); return; }
 
+  const stageView = addStage(ctx, model, concert);
+
   const state = { ...model.defaultSeat, mode: 'overview', lights: 'show', posture: 'sit', zoom: 1 };
-  ctx.setLights(state.lights, true);
+  /** Show or House lights, for the venue, the stage and (later) the crowd together. */
+  function setLights(mode) {
+    state.lights = mode === 'house' ? 'house' : 'show';
+    ctx.setLights(state.lights, state.mode === 'overview');
+    stageView.setLights(state.lights);
+    animU.uEnergy.value = state.lights === 'house' ? 0 : 1;
+  }
+  setLights(state.lights);
 
   drawBrand(concert, venueDef);
   document.addEventListener('langchange', () => drawBrand(concert, venueDef));
   $('#brand').hidden = false;
 
   addEventListener('resize', ctx.resize);
+  const clock = new THREE.Clock();
   function frame() {
     requestAnimationFrame(frame);
+    const time = clock.getElapsedTime();
+    animU.uTime.value = time;
+    stageView.update(time);
     ctx.render();
   }
   requestAnimationFrame(frame);
@@ -83,7 +99,7 @@ function boot() {
 
   if (debug) {
     window.__jk = {
-      ready: true, model, ctx, state,
+      ready: true, model, ctx, state, setLights,
       /** Draws one frame and counts the different colours on a 64 x 64 grid of its pixels. */
       pixelStats() {
         ctx.render();

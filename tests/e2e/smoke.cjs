@@ -144,6 +144,24 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await s.close();
     }
+    {
+      const s = await open('/sim.html?c=enhypen-jis-2027&debug');
+      await ready(s.page);
+      await check('sim: the stage, screens, sound desk and towers are built and can block a view', async () => {
+        const n = await s.page.evaluate(() => ({
+          obstacles: window.__jk.ctx.obstacles.length, floorObs: window.__jk.ctx.floorObs.length,
+          stands: window.__jk.model.sections.filter((x) => x.kind === 'stand').length
+        }));
+        assert(n.obstacles > n.stands + 5, `only ${n.obstacles} obstacles for ${n.stands} stand sections`);
+        equal(n.floorObs, 3, 'sound desk plus two towers');
+      });
+      await check('sim: house lights still draw the venue', async () => {
+        const stats = await s.page.evaluate(() => { window.__jk.setLights('house'); return window.__jk.pixelStats(); });
+        assert(stats.distinct > 50, `only ${stats.distinct} colours`);
+        equal(s.errors.join(' | '), '');
+      });
+      await s.close();
+    }
     // SIM-CHECKS (later tasks add their checks above this line)
   }
 

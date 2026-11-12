@@ -3,6 +3,7 @@
 
 import { verdictKeys } from '../engine/verdict.js';
 import { t, tx, fmtPrice, fmtCount } from '../i18n.js';
+import { openSupport } from '../support.js';
 
 const $ = (sel) => document.querySelector(sel);
 const SVG = 'http://www.w3.org/2000/svg';
@@ -177,6 +178,9 @@ export function createPanel(model, concert, handlers) {
       links.forEach((a, i) => { if (i) p.append(' · '); p.append(a); });
       parts.push(p);
     }
+    const support = node('button', { type: 'button', class: 'support-link', text: t('support.line') });
+    support.addEventListener('click', openSupport);
+    parts.push(node('p', {}, support));
     fine.replaceChildren(...parts);
   }
 

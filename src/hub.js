@@ -7,6 +7,7 @@ import { VENUES } from './data/venues/index.js';
 import { jakartaToday, upcoming, nextDate, dday, groupByMonth } from './engine/calendar.js';
 import { initLang, getLang, setLang, t, fmtRp, fmtDates, fmtMonth, fmtCount } from './i18n.js';
 import { countVisit } from './counter.js';
+import { openSupport } from './support.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
@@ -105,6 +106,8 @@ function render() {
   $('#f3dLabel').textContent = t('hub.filter3d');
   $('#fvenueLabel').textContent = t('hub.filterVenue');
   $('#fine').textContent = t('fine.hub');
+  $('#support').textContent = t('support.button');
+  $('#supportLine').textContent = t('support.line');
   $('#checked').textContent = t('hub.checked', { date: fmtDates([DATA_CHECKED]) });
   $('#sources').textContent = t('hub.sources');
   $('#filters').hidden = all.length === 0;
@@ -131,6 +134,8 @@ function render() {
 initLang();
 $('#lang').addEventListener('click', () => setLang(getLang() === 'id' ? 'en' : 'id'));
 $('#f3d').addEventListener('change', render);
+$('#support').addEventListener('click', openSupport);
+$('#supportLine').addEventListener('click', openSupport);
 $('#fvenue').addEventListener('change', render);
 $('#filters').addEventListener('submit', (e) => e.preventDefault());
 document.addEventListener('langchange', render);

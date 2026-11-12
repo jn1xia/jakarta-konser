@@ -113,7 +113,16 @@ export const STRINGS = {
     'est.roofEdge': 'tepi atap',
     'est.ceiling': 'tinggi plafon',
     'est.capacity': 'kapasitas',
-    'price.none': 'Harga belum diumumkan'
+    'price.none': 'Harga belum diumumkan',
+
+    'support.button': 'Dukung ♥',
+    'support.line': 'Suka situs ini? Dukung lewat QRIS',
+    'support.title': 'Dukung Jakarta Konser',
+    'support.body': 'Situs ini gratis dan tetap gratis. Kalau terbantu, kamu bisa dukung lewat QRIS — nominal bebas, sama sekali tidak wajib. Terima kasih!',
+    'support.hint': 'Di HP: simpan gambarnya, lalu buka aplikasi e-wallet atau bank dan pindai dari galeri.',
+    'support.alt': 'Kode QRIS GoPay Merchant untuk dukungan',
+    'support.save': 'Simpan gambar QRIS',
+    'support.close': 'Tutup'
   },
   en: {
     'site.name': 'Jakarta Konser',
@@ -225,7 +234,16 @@ export const STRINGS = {
     'est.roofEdge': 'roof edge',
     'est.ceiling': 'ceiling height',
     'est.capacity': 'capacity',
-    'price.none': 'Price not announced'
+    'price.none': 'Price not announced',
+
+    'support.button': 'Support ♥',
+    'support.line': 'Like this site? Support it via QRIS',
+    'support.title': 'Support Jakarta Konser',
+    'support.body': 'This site is free and stays free. If it helped you, you can chip in through QRIS — any amount, never required. Thank you!',
+    'support.hint': 'On a phone: save the image, then open your e-wallet or bank app and scan it from your gallery.',
+    'support.alt': 'GoPay Merchant QRIS code for support',
+    'support.save': 'Save the QRIS image',
+    'support.close': 'Close'
   }
 };
 

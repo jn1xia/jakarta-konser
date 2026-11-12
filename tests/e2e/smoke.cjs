@@ -133,6 +133,50 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
     await phone.close();
   }
 
+  if (wants('support')) {
+    const opened = (page) => page.evaluate(() => {
+      const d = document.querySelector('#supportDialog'), img = d && d.querySelector('img');
+      return { open: !!(d && d.open), img: img ? { src: img.getAttribute('src'), loaded: img.complete && img.naturalWidth > 0 } : null,
+        save: d ? (d.querySelector('a[download]') || {}).getAttribute?.('href') : null };
+    });
+    const hub = await open('/index.html?debug&today=2026-11-12');
+    await hub.page.waitForSelector('.card');
+    await check('support: the QRIS loads only when asked for, then opens from the header button', async () => {
+      equal(await hub.page.evaluate(() => [...document.images].some((i) => /qris/.test(i.src))), false, 'the QRIS image loads before anyone asks');
+      equal(await hub.page.$eval('#support', (e) => e.textContent.trim()), 'Dukung ♥');
+      await hub.page.click('#support');
+      await hub.page.waitForFunction(() => { const i = document.querySelector('#supportDialog img'); return i && i.complete && i.naturalWidth > 0; });
+      const got = await opened(hub.page);
+      equal(got.open, true, 'dialog open'); equal(got.img.src, 'assets/qris.png'); equal(got.save, 'assets/qris.png', 'save link');
+      assert((await hub.page.$eval('#supportDialog', (e) => e.textContent)).includes('tidak wajib'), 'the dialog does not say it is optional');
+      await hub.page.keyboard.press('Escape');
+      equal((await opened(hub.page)).open, false, 'Escape did not close it');
+    });
+    await check('support: the footer line opens it too, and it speaks English after the switch', async () => {
+      await hub.page.click('#supportLine'); equal((await opened(hub.page)).open, true);
+      await hub.page.click('#supportDialog [data-close]'); equal((await opened(hub.page)).open, false, 'Tutup did not close it');
+      await hub.page.click('#lang');
+      equal(await hub.page.$eval('#support', (e) => e.textContent.trim()), 'Support ♥');
+      await hub.page.click('#support');
+      assert((await hub.page.$eval('#supportDialog', (e) => e.textContent)).includes('never required'), 'dialog not in English');
+      await hub.page.keyboard.press('Escape'); await hub.page.click('#lang');
+      equal(hub.errors.join(' | '), '');
+    });
+    await hub.close();
+
+    const sim = await open('/sim.html?c=enhypen-jis-2027&debug');
+    await sim.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+    await check('support: the seat panel offers it too, without getting in the way of the view', async () => {
+      await sim.page.click('#fine .support-link');
+      await sim.page.waitForFunction(() => { const i = document.querySelector('#supportDialog img'); return i && i.complete && i.naturalWidth > 0; });
+      equal((await opened(sim.page)).open, true);
+      await sim.page.keyboard.press('Escape');
+      equal((await opened(sim.page)).open, false);
+      equal(sim.errors.join(' | '), '');
+    });
+    await sim.close();
+  }
+
   if (['sim', 'venues', 'stage', 'seat', 'crowd', 'panel', 'links'].some(wants)) {
     const engine = CONCERTS.filter((c) => c.sim && !c.sim.external);
     const ready = (page) => page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });

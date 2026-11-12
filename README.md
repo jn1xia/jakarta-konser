@@ -141,22 +141,41 @@ three.js r128, which is served from `vendor/` so the site depends on no CDN.
 
 ## Deploy
 
-GitHub Pages is free for public repositories.
+The site is live on Vercel at **https://jakarta-konser.vercel.app**.
 
-- **Preview from a branch:** Settings → Pages → Build and deployment, set Source to "Deploy from a
-  branch", then pick the branch and folder `/ (root)`. The site goes live at
-  https://jn1xia.github.io/jakarta-konser/ in about a minute.
-- **From `main`:** set Source to "GitHub Actions". `.github/workflows/pages.yml` then runs the
-  unit tests and publishes every push to `main`. It can also be run by hand from the Actions tab.
+- `vercel.json` marks it as plain files with no framework, and adds two security headers.
+- `.vercelignore` uploads only `index.html`, `sim.html`, `assets/`, `src/`, `vendor/` and
+  `vercel.json`. With no `package.json` uploaded there is nothing to install or build, and tests,
+  docs and the README are not published.
 
-Any other static host works: upload `index.html`, `sim.html`, `assets/`, `src/` and `vendor/`.
+**Redeploy after a change.** From the repository root, with a token from
+https://vercel.com/account/tokens:
+
+```sh
+npx vercel@64.7.0 deploy --prod --yes --token <your token>
+```
+
+The first run links the folder to the `jakarta-konser` project and writes `.vercel/`, which git
+ignores.
+
+**Deploy on every push instead (optional).** In the Vercel dashboard open the project, then
+Settings → Git, and connect `jn1xia/jakarta-konser`. Pushes to `main` then go to production, and
+other branches get preview links. Preview links sit behind Vercel's login (Deployment Protection);
+the production address is public.
+
+**GitHub Pages (optional, off).** `.github/workflows/pages.yml` still builds a Pages copy, but it
+runs only when started by hand from the Actions tab, after Settings → Pages → Source is set to
+"GitHub Actions". The site would then also be at https://jn1xia.github.io/jakarta-konser/.
+
+Any other static host works: upload the same five items.
 
 ## Visitor counter
 
 The hub shows "N pengunjung sejauh ini" under the title. It counts each browser once: the first
 visit adds one and leaves a flag in the browser, and later visits only read the total. It uses
 [Abacus](https://github.com/JasonLovesDoggo/abacus), a free counter service that needs no account.
-It runs only on `jn1xia.github.io`, so local copies and previews never change the count. If the
+It runs only on `jakarta-konser.vercel.app` and `jn1xia.github.io`, so local copies and Vercel
+preview links never change the count. If the
 service is slow or down, the line stays hidden.
 
 - **See the total any time:** https://abacus.jasoncameron.dev/get/jn1xia.github.io/jakarta-konser-visitors

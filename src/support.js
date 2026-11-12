@@ -3,6 +3,7 @@
 // depends on it, and it never opens by itself.
 
 import { t } from './i18n.js';
+import { rememberOpened } from './nudge.js';
 
 const IMAGE = 'assets/qris.png';
 let dialog = null;
@@ -58,4 +59,5 @@ export function openSupport() {
   if (!img.getAttribute('src')) img.setAttribute('src', IMAGE);
   dialog.showModal();
   dialog.querySelector('[data-close]').focus();
+  rememberOpened();                                          // the simulator's note then stays away for a month
 }

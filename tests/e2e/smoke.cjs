@@ -175,6 +175,64 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       equal(sim.errors.join(' | '), '');
     });
     await sim.close();
+
+    const shown = (page) => page.evaluate(() => { const n = document.querySelector('#nudge'); return !!n && !n.hidden && n.classList.contains('on'); });
+    const SIM = '/sim.html?c=enhypen-jis-2027&debug';
+    {
+      const pg = await open(SIM + '&nudge=0&nudgeFor=600000');
+      await check('nudge: a note about the QRIS appears on its own, and leads to it', async () => {
+        await pg.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+        await pg.page.waitForFunction(() => { const n = document.querySelector('#nudge'); return n && n.classList.contains('on'); }, null, { timeout: 10000 });
+        assert((await pg.page.$eval('#nudge', (e) => e.textContent)).includes('QRIS'), 'the note does not mention QRIS');
+        equal(await pg.page.$eval('#nudge', (e) => e.getAttribute('role')), 'status');
+        await pg.page.click('#nudge .nudge-open');
+        equal(await pg.page.evaluate(() => document.querySelector('#supportDialog').open), true, 'the QRIS window did not open');
+        equal(await shown(pg.page), false, 'the note stayed up');
+        await pg.page.keyboard.press('Escape');
+        await pg.page.reload(); await pg.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+        await pg.page.waitForTimeout(2500);
+        equal(await shown(pg.page), false, 'the note came back right after the QRIS was opened');
+        equal(pg.errors.join(' | '), '');
+      });
+      await pg.close();
+    }
+    {
+      const pg = await open(SIM + '&nudge=0&nudgeFor=600000', { width: 390, height: 844 });
+      await check('nudge: × closes it and it stays away; it fits a phone', async () => {
+        await pg.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+        await pg.page.waitForFunction(() => { const n = document.querySelector('#nudge'); return n && n.classList.contains('on'); }, null, { timeout: 10000 });
+        const box = await pg.page.$eval('#nudge', (e) => { const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, w: innerWidth }; });
+        assert(box.l >= 0 && box.r <= box.w, `the note runs off the screen (${Math.round(box.l)}..${Math.round(box.r)} of ${box.w})`);
+        await pg.page.click('#nudge .nudge-close');
+        equal(await shown(pg.page), false, '× did not close it');
+        const record = await pg.page.evaluate(() => JSON.parse(localStorage.getItem('jk.nudge.v1') || '{}'));
+        assert(typeof record.dismissed === 'number', 'closing it was not remembered');
+        await pg.page.reload(); await pg.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+        await pg.page.waitForTimeout(2500);
+        equal(await shown(pg.page), false, 'the note came back after ×');
+        equal(pg.errors.join(' | '), '');
+      });
+      await pg.close();
+    }
+    {
+      const pg = await open(SIM + '&nudge=0&nudgeFor=1500', { width: 390, height: 844 });
+      await check('nudge: it goes away by itself', async () => {
+        await pg.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+        await pg.page.waitForFunction(() => !document.querySelector('#nudge'), null, { timeout: 20000 });
+        const record = await pg.page.evaluate(() => JSON.parse(localStorage.getItem('jk.nudge.v1') || '{}'));
+        assert(typeof record.shown === 'number' && record.dismissed === undefined, 'a note that hid itself should count as shown, not closed');
+      });
+      await pg.close();
+    }
+    {
+      const pg = await open(SIM);
+      await check('nudge: test pages without the flag never show it, so other checks are not disturbed', async () => {
+        await pg.page.waitForFunction(() => window.__jk && window.__jk.ready, null, { timeout: 45000 });
+        await pg.page.waitForTimeout(2500);
+        equal(await shown(pg.page), false);
+      });
+      await pg.close();
+    }
   }
 
   if (['sim', 'venues', 'stage', 'seat', 'crowd', 'panel', 'links'].some(wants)) {

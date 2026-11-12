@@ -13,6 +13,8 @@ import { createCamera } from './camera.js';
 import { addCrowd } from './crowd.js';
 import { computeFacts } from './facts.js';
 import { createPanel } from './panel.js';
+import { openSupport } from '../support.js';
+import { scheduleNudge } from '../nudge.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
@@ -199,6 +201,13 @@ function start(concert, venueDef, model, ctx) {
 
   drawBrand(concert, venueDef);
   document.addEventListener('langchange', () => { drawBrand(concert, venueDef); panel.relabel(); refresh(); });
+  // The quiet QRIS note. Test pages (?debug) show it only when asked to: &nudge=<delay in ms>,
+  // and &nudgeFor=<ms> for how long it stays up (slow test machines need longer than 12 s).
+  if (!debug) scheduleNudge({ open: openSupport });
+  else if (params.has('nudge')) {
+    const stay = Number(params.get('nudgeFor'));
+    scheduleNudge({ open: openSupport, delay: Number(params.get('nudge')) || 0, ...(stay > 0 ? { visible: stay } : {}) });
+  }
   $('#brand').hidden = false;
 
   addEventListener('resize', ctx.resize);

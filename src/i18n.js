@@ -122,7 +122,10 @@ export const STRINGS = {
     'support.hint': 'Di HP: simpan gambarnya, lalu buka aplikasi e-wallet atau bank dan pindai dari galeri.',
     'support.alt': 'Kode QRIS GoPay Merchant untuk dukungan',
     'support.save': 'Simpan gambar QRIS',
-    'support.close': 'Tutup'
+    'support.close': 'Tutup',
+    'nudge.text': 'Suka simulasinya? Dukung lewat QRIS ♥',
+    'nudge.open': 'Lihat QRIS',
+    'nudge.close': 'Tutup'
   },
   en: {
     'site.name': 'Jakarta Konser',
@@ -243,7 +246,10 @@ export const STRINGS = {
     'support.hint': 'On a phone: save the image, then open your e-wallet or bank app and scan it from your gallery.',
     'support.alt': 'GoPay Merchant QRIS code for support',
     'support.save': 'Save the QRIS image',
-    'support.close': 'Close'
+    'support.close': 'Close',
+    'nudge.text': 'Enjoying the simulator? Support it via QRIS ♥',
+    'nudge.open': 'See QRIS',
+    'nudge.close': 'Close'
   }
 };
 

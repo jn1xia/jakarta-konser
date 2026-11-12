@@ -318,6 +318,67 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await ph.close();
     }
+    if (part('links')) {
+      const { pack } = await import(pathToFileURL(path.join(ROOT, 'src/engine/config.js')));
+      const message = async (url) => {
+        const pg = await open(url);
+        await pg.page.waitForSelector('#message:not([hidden])', { timeout: 15000 });
+        const out = { title: await pg.page.$eval('#messageTitle', (e) => e.textContent), href: await pg.page.$eval('#messageLink', (e) => e.getAttribute('href')), errors: pg.errors.join(' | ') };
+        await pg.close();
+        return out;
+      };
+      await check('links: an unknown concert says so and offers the way back', async () => {
+        const m = await message('/sim.html?c=nope');
+        equal(m.title, 'Konser tidak ditemukan'); assert(m.href.startsWith('index.html'), `link goes to ${m.href}`); equal(m.errors, '');
+      });
+      await check('links: a broken packed link says so', async () => {
+        equal((await message('/sim.html#k=@@@')).title, 'Tautan rusak');
+        equal((await message('/sim.html#k=' + Buffer.from('{"v":2}').toString('base64url'))).title, 'Tautan rusak');
+      });
+      await check('links: a packed link opens as a fan-made simulation and its text is never run as markup', async () => {
+        const base0 = CONCERTS.find((c) => c.id === 'enhypen-jis-2027');
+        const evil = '<img src=x onerror="window.__xss=1">';
+        const cats = base0.sim.categories.map((c, i) => (i === 2 ? { ...c, name: '<b onclick="window.__xss=1">CAT</b>' } : c));
+        const link = '/sim.html?debug#k=' + pack({ ...base0, artist: evil, tour: '<script>window.__xss=1</script>', sim: { ...base0.sim, categories: cats } });
+        const pg = await open(link);
+        await ready(pg.page);
+        const got = await pg.page.evaluate(() => ({
+          artist: document.querySelector('#artist').textContent, imgs: document.querySelectorAll('#brand img, #panel img, #panel b, #brand script').length,
+          badge: document.querySelector('#accuracy').textContent, xss: window.__xss, custom: window.__jk.model.concert.custom === true,
+          legend: document.querySelector('#catList').textContent
+        }));
+        equal(got.artist, evil); equal(got.imgs, 0, 'markup from the link became elements'); equal(got.xss, undefined, 'script from the link ran');
+        equal(got.badge, 'Buatan penggemar · tidak resmi'); equal(got.custom, true);
+        assert(got.legend.includes('<b onclick'), 'the category name is not shown as text');
+        await pg.page.evaluate(() => window.__jk.selectSeat(window.__jk.model.byId['U-03'], 3, 5));
+        assert(pg.page.url().includes('#k=') && pg.page.url().includes('s=U-03'), 'choosing a seat lost the packed settings');
+        equal(pg.errors.join(' | '), '');
+        await pg.close();
+      });
+      await check('links: a show that is over still opens', async () => {
+        const pg = await open('/sim.html?c=5sos-indonesia-arena-2026&debug&s=U-03&r=2&n=4');
+        await ready(pg.page);
+        equal(await pg.page.evaluate(() => window.__jk.state.sec.id), 'U-03'); equal(pg.errors.join(' | '), '');
+        await pg.close();
+      });
+      await check('links: a show with no simulation goes to its card on the hub', async () => {
+        const pg = await open('/sim.html?c=txt-jakarta-2027');
+        await pg.page.waitForURL(/index\.html#txt-jakarta-2027$/, { timeout: 15000 });
+        await pg.page.waitForSelector('.card.is-target');
+        equal(await pg.page.$eval('.card.is-target', (e) => e.dataset.id), 'txt-jakarta-2027');
+        await pg.close();
+      });
+      await check('links: BTS goes to its own site', async () => {
+        const context = await browser.newContext();
+        const page = await context.newPage();
+        const asked = [];
+        await page.route((u) => !u.href.startsWith(base), (route) => { asked.push(route.request().url()); route.abort(); });
+        await page.goto(base + '/sim.html?c=bts-gbk-2026').catch(() => {});
+        await page.waitForTimeout(800);
+        assert(asked.includes('https://jn1xia.github.io/bts/'), `asked for ${asked.join(', ') || 'nothing'}`);
+        await context.close();
+      });
+    }
     // SIM-CHECKS (later tasks add their checks above this line)
   }
 

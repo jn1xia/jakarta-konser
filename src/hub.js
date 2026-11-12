@@ -108,6 +108,13 @@ function render() {
       el('div', { class: 'grid' }, g.shows.map(card))
     ])
   ));
+  // A link such as index.html#txt-jakarta-2027 points at one card
+  const wanted = decodeURIComponent(location.hash.slice(1));
+  const target = wanted && [...document.querySelectorAll('.card')].find((c) => c.dataset.id === wanted);
+  if (target) {
+    target.classList.add('is-target');
+    if (!render.arrived) { render.arrived = true; target.scrollIntoView({ block: 'center' }); }
+  }
   const empty = $('#empty');
   empty.hidden = shown.length > 0;
   empty.textContent = all.length ? t('hub.noMatch') : t('hub.empty');
@@ -119,4 +126,5 @@ $('#f3d').addEventListener('change', render);
 $('#fvenue').addEventListener('change', render);
 $('#filters').addEventListener('submit', (e) => e.preventDefault());
 document.addEventListener('langchange', render);
+addEventListener('hashchange', () => { render.arrived = false; render(); });
 render();

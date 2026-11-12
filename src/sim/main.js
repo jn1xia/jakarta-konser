@@ -3,6 +3,7 @@
 import { CONCERT_BY_ID } from '../data/concerts.js';
 import { VENUES } from '../data/venues/index.js';
 import { buildModel, resolveSeat } from '../engine/model.js';
+import { validate, unpack } from '../engine/config.js';
 import { jakartaToday, nextDate, dday } from '../engine/calendar.js';
 import { initLang, getLang, setLang, t, fmtDates } from '../i18n.js';
 import { createScene } from './scene.js';
@@ -59,13 +60,34 @@ function drawBrand(concert, venueDef) {
   document.title = `${concert.artist} · ${venueDef.short} · Jakarta Konser`;
 }
 
+/**
+ * The concert this address asks for, or null after showing why there is none. A packed link
+ * (#k=...) carries its own settings and wins; otherwise ?c= names a show from the site's data.
+ */
+function findConcert() {
+  const packed = /^#k=(.*)$/.exec(location.hash);
+  if (packed) {
+    const got = unpack(packed[1], VENUES);
+    if (!got.ok) { console.warn('Packed link refused:', got.error); showMessage('err.link'); return null; }
+    return got.concert;
+  }
+  const id = params.get('c');
+  const concert = id && Object.prototype.hasOwnProperty.call(CONCERT_BY_ID, id) ? CONCERT_BY_ID[id] : null;
+  if (!concert) { showMessage('err.notfound'); return null; }
+  if (!concert.sim) { location.replace(`index.html#${encodeURIComponent(concert.id)}`); return null; }   // listed, not simulated
+  if (concert.sim.external) { location.replace(concert.sim.external); return null; }                    // BTS, BIGBANG
+  const problems = validate(concert, VENUES);
+  if (problems.length) { console.error(`Concert "${concert.id}" has bad data:`, problems); showMessage('err.data'); return null; }
+  return concert;
+}
+
 function boot() {
   initLang();
   $('#loading').textContent = t('sim.loading');
   $('#lang').addEventListener('click', () => setLang(getLang() === 'id' ? 'en' : 'id'));
 
-  const concert = CONCERT_BY_ID[params.get('c')];
-  if (!concert || !concert.sim || concert.sim.external) { showMessage('err.notfound'); return; }
+  const concert = findConcert();
+  if (!concert) return;
   if (!window.THREE) { showFallback(); return; }
 
   const venueDef = VENUES[concert.venue];

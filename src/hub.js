@@ -5,7 +5,8 @@
 import { CONCERTS, DATA_CHECKED } from './data/concerts.js';
 import { VENUES } from './data/venues/index.js';
 import { jakartaToday, upcoming, nextDate, dday, groupByMonth } from './engine/calendar.js';
-import { initLang, getLang, setLang, t, fmtRp, fmtDates, fmtMonth } from './i18n.js';
+import { initLang, getLang, setLang, t, fmtRp, fmtDates, fmtMonth, fmtCount } from './i18n.js';
+import { countVisit } from './counter.js';
 
 const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
@@ -84,6 +85,12 @@ function fillVenues(shows) {
   select.value = seen.has(chosen) ? chosen : '';
 }
 
+let visitors = null;                                         // stays null unless the counter answers
+function drawVisitors() {
+  $('#visitors').hidden = visitors === null;
+  if (visitors !== null) $('#visitorText').textContent = t('hub.visitors', { n: fmtCount(visitors) });
+}
+
 function render() {
   const all = upcoming(CONCERTS, today);
   fillVenues(all);
@@ -101,6 +108,7 @@ function render() {
   $('#checked').textContent = t('hub.checked', { date: fmtDates([DATA_CHECKED]) });
   $('#sources').textContent = t('hub.sources');
   $('#filters').hidden = all.length === 0;
+  drawVisitors();
 
   $('#list').replaceChildren(...groupByMonth(shown, today).map((g) =>
     el('section', { class: 'month' }, [
@@ -126,5 +134,10 @@ $('#f3d').addEventListener('change', render);
 $('#fvenue').addEventListener('change', render);
 $('#filters').addEventListener('submit', (e) => e.preventDefault());
 document.addEventListener('langchange', render);
+countVisit({
+  hostname: location.hostname,
+  fetch: (url, options) => fetch(url, options),
+  storage: { getItem: (k) => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v) }
+}).then((n) => { visitors = n; drawVisitors(); });
 addEventListener('hashchange', () => { render.arrived = false; render(); });
 render();

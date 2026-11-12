@@ -9,7 +9,8 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 const { chromium } = require('playwright');
 
-const ROOT = path.resolve(__dirname, '../..');
+// SITE_ROOT=_site checks the folder the deploy workflow publishes instead of the repository
+const ROOT = path.resolve(process.env.SITE_ROOT || path.join(__dirname, '../..'));
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
 const only = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);
 const wants = (group) => !only || only.split(',').includes(group);
@@ -195,6 +196,19 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
         await plain.page.evaluate(() => window.__jk.setMode('pov', false));
         const low = await plain.page.evaluate(() => { const j = window.__jk; return Math.abs(j.ctx.camera.position.y - j.cam.eyePos.y); });
         assert(low < 0.01, 'camera did not return to the seat');
+      });
+      await check('seat: the whole-venue view is centred beside the panel and shows lights, not figures', async () => {
+        const got = await plain.page.evaluate(() => {
+          const j = window.__jk; j.setMode('overview', false); j.cam.apply(performance.now());
+          const c = j.ctx.camera; c.updateMatrixWorld();
+          const v = new THREE.Vector3(0, 0, 0).project(c), w = j.ctx.renderer.domElement.clientWidth;
+          const out = { x: (v.x + 1) / 2 * w, w, figures: j.crowd.figuresShown() };
+          j.setMode('pov', false);
+          return { ...out, back: j.crowd.figuresShown() };
+        });
+        const free = (got.w - 384) / 2;
+        assert(Math.abs(got.x - free) < 70, `venue centre is at x=${Math.round(got.x)}, the free area's middle is ${Math.round(free)}`);
+        equal(got.figures, false, 'jointed fans are drawn in the whole-venue view'); equal(got.back, true, 'jointed fans did not come back');
       });
       await plain.close();
 

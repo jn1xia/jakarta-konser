@@ -119,6 +119,9 @@ export function addCrowd(ctx, model, theme = {}) {
   return {
     count: N,
     nearCount: () => near.count + far.count,
+    /** The jointed fans are for the seat view; from above, the lights alone read better. */
+    showFigures(on) { near.visible = far.visible = !!on; },
+    figuresShown: () => near.visible && far.visible,
     /** Call once a frame: keeps the lights the same size on screen whatever the zoom. */
     update() { lightU.uPix.value = ctx.renderer.domElement.height / (2 * Math.tan((ctx.camera.fov * Math.PI) / 360)); },
     setSeat(seatPos) { seatAt.copy(seatPos); lightU.uSelf.value.copy(seatPos); rebuild(); },

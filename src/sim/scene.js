@@ -8,6 +8,7 @@ const THREE = window.THREE;
 const CONCRETE = 0x474b54, WALL = 0x1c1e23, SOFFIT = 0x202329, CLOSED = 0x101115;
 const FASCIA = 1.6;       // depth of the fascia below an upper tier's front row
 const PARAPET = 0.9;      // height of the wall in front of a tier's first row
+const PANEL = 384;        // width the seat panel takes on a wide screen, in CSS pixels
 
 function pushQuad(P, C, a, b, c, d, col) {
   P.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, a.x, a.y, a.z, c.x, c.y, c.z, d.x, d.y, d.z);
@@ -239,7 +240,10 @@ export function createScene(canvas, model) {
   function resize() {
     const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
     renderer.setSize(w, h, false);
-    camera.aspect = w / h; camera.updateProjectionMatrix();
+    camera.aspect = w / h;
+    // On a wide screen the seat panel covers the right-hand side, so the view is centred in what is left
+    if (w > 760) camera.setViewOffset(w, h, PANEL / 2, 0, w, h); else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
   }
 
   /** A pose that shows the whole venue from above the far corner. */

@@ -154,6 +154,7 @@ function boot() {
   }
   function setMode(mode, fly) {
     cam.setMode(mode, fly);
+    crowd.showFigures(state.mode === 'pov');
     setLights(state.lights);
     if (panel) panel.showTip(null);
   }

@@ -1,0 +1,9 @@
+# Only the site itself goes to Vercel. Without package.json there is nothing to install or
+# build, so Vercel serves these files as they are.
+/*
+!index.html
+!sim.html
+!assets
+!src
+!vendor
+!vercel.json

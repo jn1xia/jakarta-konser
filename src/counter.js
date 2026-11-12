@@ -1,13 +1,14 @@
 // Visitor counter, as on the BTS and BIGBANG sites. It counts each browser once: the first
 // visit adds one and leaves a flag in the browser, and later visits only read the total.
-// It runs only on the published site, so local copies and previews never touch the count.
+// It runs only on the published site (COUNTER.hosts), so local copies and previews never touch the count.
 // Service: Abacus (abacus.jasoncameron.dev), a free counter that needs no account.
 // The owner can read the total any time at COUNTER.base + '/get/' + COUNTER.key.
 
 export const COUNTER = {
   base: 'https://abacus.jasoncameron.dev',
   key: 'jn1xia.github.io/jakarta-konser-visitors',
-  hosts: ['jn1xia.github.io'],
+  // The published addresses. Vercel preview deployments (…-git-…vercel.app) are left out on purpose.
+  hosts: ['jakarta-konser.vercel.app', 'jn1xia.github.io'],
   flag: 'jk.counted.v1'
 };
 

@@ -55,3 +55,11 @@ test('a service that is down, slow or answers nonsense gives no number', async (
   const never = () => new Promise(() => {});
   assert.equal(await countVisit({ hostname: live, fetch: never, storage: storage(), timeout: 20 }), null);
 });
+test('the Vercel production address counts, preview deployments do not', async () => {
+  const s = service([{ value: 5 }]);
+  assert.equal(await countVisit({ hostname: 'jakarta-konser.vercel.app', fetch: s.fetch, storage: storage() }), 5);
+  assert.deepEqual(s.asked, [`/hit/${key}`]);
+  const p = service([]);
+  assert.equal(await countVisit({ hostname: 'jakarta-konser-git-main-jn1xia.vercel.app', fetch: p.fetch, storage: storage() }), null);
+  assert.deepEqual(p.asked, []);
+});

@@ -1,10 +1,12 @@
 name: Deploy to GitHub Pages
 
-# Needs Settings → Pages → Source set to "GitHub Actions".
+# The site is hosted on Vercel, so this runs only when started by hand from the Actions tab.
+# To publish on GitHub Pages as well: set Settings → Pages → Source to "GitHub Actions", and add
+#   push:
+#     branches: [main]
+# under `on:` to publish every push to main.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 permissions:
   contents: read

@@ -107,6 +107,8 @@ export function createCamera(ctx, model, state) {
       return;
     }
     jump(state.mode === 'pov' ? povPose() : overviewPose());
+    const roof = state.mode === 'pov';
+    if (ctx.roofOn() !== roof) ctx.setRoof(roof);
   }
 
   /* Picking: which section, and where on it, is under a point of the screen */

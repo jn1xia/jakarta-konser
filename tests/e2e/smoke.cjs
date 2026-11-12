@@ -45,8 +45,8 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 
   /** Opens a page and records its errors. Same-origin 404s count; other hosts are blocked. */
-  async function open(url, viewport = { width: 1280, height: 800 }) {
-    const context = await browser.newContext({ viewport });
+  async function open(url, viewport = { width: 1280, height: 800 }, options = {}) {
+    const context = await browser.newContext({ viewport, ...options });
     const page = await context.newPage();
     const errors = [];
     await page.route((u) => !u.href.startsWith(base), (route) => route.abort());
@@ -212,14 +212,49 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
       });
       await plain.close();
 
-      const junk = await open('/sim.html?c=enhypen-jis-2027&debug&s=ZZ&r=999&n=-3');
-      await ready(junk.page);
-      await check('seat: garbage seat values in the address fall back to the default seat', async () => {
-        const now = await seat(junk.page), d = await dflt(junk.page);
-        equal(`${now.sec}/${now.row}/${now.seat}`, `${d.sec}/${d.row}/${d.seat}`);
-        equal(junk.errors.join(' | '), '');
+      for (const s of ['ZZ', 'constructor', '__proto__']) {
+        const junk = await open(`/sim.html?c=enhypen-jis-2027&debug&s=${s}&r=999&n=-3`);
+        await check(`seat: garbage seat values in the address (s=${s}) fall back to the default seat`, async () => {
+          await ready(junk.page);
+          const now = await seat(junk.page), d = await dflt(junk.page);
+          equal(`${now.sec}/${now.row}/${now.seat}`, `${d.sec}/${d.row}/${d.seat}`);
+          equal(junk.errors.join(' | '), '');
+        });
+        await junk.close();
+      }
+
+      const flight = await open('/sim.html?c=enhypen-jis-2027&debug');
+      await ready(flight.page);
+      await check('seat: the roof comes back over the seat even when the flight there is interrupted', async () => {
+        for (const interrupt of ['wheel', 'legend']) {
+          await flight.page.evaluate((how) => {
+            const j = window.__jk; j.setMode('overview', false); j.setMode('pov', true);
+            if (how === 'wheel') document.querySelector('#scene').dispatchEvent(new WheelEvent('wheel', { deltaY: 40, bubbles: true, cancelable: true }));
+            else document.querySelector('#catList .cat').click();
+          }, interrupt);
+          // Frames are slow under software rendering, so wait for the glide to land rather than a fixed time
+          await flight.page.waitForFunction(() => window.__jk.ctx.roofOn(), null, { timeout: 15000 }).catch(() => {});
+          const got = await flight.page.evaluate(() => ({ mode: window.__jk.state.mode, roof: window.__jk.ctx.roofOn() }));
+          equal(`${interrupt}: ${got.mode} roof ${got.roof}`, `${interrupt}: pov roof true`);
+        }
+        equal(flight.errors.join(' | '), '');
       });
-      await junk.close();
+      await flight.close();
+
+      const calm = await open('/sim.html?c=enhypen-jis-2027&debug', { width: 1280, height: 800 }, { reducedMotion: 'reduce' });
+      await ready(calm.page);
+      const busy = await open('/sim.html?c=enhypen-jis-2027&debug');
+      await ready(busy.page);
+      await check('seat: with reduced motion the crowd and performers hold still', async () => {
+        await calm.page.waitForTimeout(800); await busy.page.waitForTimeout(800);
+        const still = await calm.page.evaluate(() => window.__jk.motion());
+        const moving = await busy.page.evaluate(() => window.__jk.motion());
+        equal(still.crowd, 0, 'crowd time with reduced motion');
+        assert(moving.crowd > 0, 'crowd does not move without reduced motion');
+        assert(still.sweep < moving.sweep, `beams sweep at ${still.sweep} with reduced motion, ${moving.sweep} without`);
+        equal(calm.errors.join(' | '), '');
+      });
+      await calm.close(); await busy.close();
 
       const pit = await open('/sim.html?c=enhypen-jis-2027&debug&s=F1-A&r=1&n=10');
       await ready(pit.page);
@@ -368,6 +403,10 @@ function equal(a, b, msg) { if (a !== b) throw new Error(`${msg || 'not equal'}:
         assert(pg.page.url().includes('#k=') && pg.page.url().includes('s=U-03'), 'choosing a seat lost the packed settings');
         equal(pg.errors.join(' | '), '');
         await pg.close();
+      });
+      await check('links: a link that leaves nothing on sale says so instead of hanging', async () => {
+        const base0 = CONCERTS.find((c) => c.id === 'enhypen-jis-2027');
+        equal((await message('/sim.html#k=' + pack({ ...base0, sim: { ...base0.sim, floor: [], stands: [] } }))).title, 'Tautan rusak');
       });
       await check('links: a show that is over still opens', async () => {
         const pg = await open('/sim.html?c=5sos-indonesia-arena-2026&debug&s=U-03&r=2&n=4');

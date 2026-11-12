@@ -18,6 +18,7 @@ const $ = (sel) => document.querySelector(sel);
 const params = new URLSearchParams(location.search);
 const debug = params.has('debug');
 const THREE = window.THREE;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Replaces the simulator with a short message and a way back to the concert list. */
 function showMessage(key) {
@@ -91,11 +92,20 @@ function boot() {
   if (!window.THREE) { showFallback(); return; }
 
   const venueDef = VENUES[concert.venue];
-  const model = buildModel(concert, venueDef);
+  // Anything that goes wrong while building ends in a message, never an endless loader
+  const broken = (err) => { console.error(err); showMessage(concert.custom ? 'err.link' : 'err.data'); };
+  let model;
+  try { model = buildModel(concert, venueDef); } catch (e) { broken(e); return; }
+  if (!model.defaultSeat) { broken(new Error('Nothing is on sale: no open seat or standing place')); return; }
   let ctx;
   try { ctx = createScene($('#scene'), model); } catch (e) { console.warn(e); showFallback(); return; }
+  try { start(concert, venueDef, model, ctx); } catch (e) { broken(e); }
+}
 
-  const stageView = addStage(ctx, model, concert);
+/** Everything after the scene exists: stage, crowd, camera, panel, the loop. */
+function start(concert, venueDef, model, ctx) {
+
+  const stageView = addStage(ctx, model, concert, { reduceMotion });
   const crowd = addCrowd(ctx, model, concert.sim.theme);
 
   // The seat named in the address, or the default one when it names none (or nonsense)
@@ -196,7 +206,7 @@ function boot() {
   function frame() {
     requestAnimationFrame(frame);
     const time = clock.getElapsedTime();
-    animU.uTime.value = time;
+    animU.uTime.value = reduceMotion ? 0 : time;               // reduced motion: the crowd and performers hold still
     stageView.update(time);
     crowd.update();
     cam.apply(performance.now());
@@ -208,6 +218,7 @@ function boot() {
   if (debug) {
     window.__jk = {
       ready: true, model, ctx, state, cam, crowd, panel, setLights, setMode, setPosture, setZoom, selectSeat,
+      motion: () => ({ crowd: animU.uTime.value, sweep: stageView.sweep() }),
       /** Draws one frame and counts the different colours on a 64 x 64 grid of its pixels. */
       pixelStats() {
         cam.apply(performance.now()); ctx.render();

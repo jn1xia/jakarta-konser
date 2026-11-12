@@ -72,7 +72,7 @@ function beamMesh(len, radius, color) {
   return m;
 }
 
-export function addStage(ctx, model, concert) {
+export function addStage(ctx, model, concert, { reduceMotion = false } = {}) {
   const { stage, venue } = model, sim = concert.sim, theme = sim.theme || {};
   const { halfZ } = venue.def.floor;
   const accent = new THREE.Color(theme.accent || '#f1eef0');
@@ -175,12 +175,14 @@ export function addStage(ctx, model, concert) {
   performers.geometry.attributes.aAnim.needsUpdate = true;
 
   let show = true;
+  const sweep = reduceMotion ? 0.25 : 1;                        // how fast the beams move
   const target = new THREE.Vector3();
   function update(t) {
     for (const s of screens) s.material.uniforms.uTime.value = t;
     if (!show) return;
+    const tt = t * sweep;
     for (const b of beams) {
-      const x = b.m.position.x, ph = b.phase;
+      const x = b.m.position.x, ph = b.phase, t = tt;
       if (b.up) target.set(x + Math.sin(t * 0.5 + ph) * 0.5 * reach, ceiling, stage.frontZ + reach * (0.25 + 0.2 * Math.cos(t * 0.33 + ph)));
       else target.set(x * 0.6 + Math.sin(t * 0.6 + ph) * 0.35 * reach, 0, stage.frontZ + reach * (0.4 + 0.3 * Math.sin(t * 0.41 + ph * 1.7)));
       b.m.lookAt(target);
@@ -197,5 +199,5 @@ export function addStage(ctx, model, concert) {
   }
 
   update(0);
-  return { update, setLights, screens, group, performerCount: spots.length };
+  return { update, setLights, screens, group, performerCount: spots.length, sweep: () => sweep };
 }

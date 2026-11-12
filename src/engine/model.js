@@ -43,7 +43,8 @@ export function buildModel(concert, venueDef) {
     }
   }
 
-  const byId = {}, byCat = {};
+  // byId is keyed by text from the address (?s=), so it has no prototype: ?s=constructor finds nothing
+  const byId = Object.create(null), byCat = {};
   let total = 0;
   for (const s of sections) {
     byId[s.id] = s;

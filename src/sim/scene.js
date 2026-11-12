@@ -222,7 +222,9 @@ export function createScene(canvas, model) {
   }
 
   /** on = false fades the roof away for the view from above. */
+  let roofShown = true;
   function setRoof(on) {
+    roofShown = !!on;
     for (const part of roofParts) { part.material.opacity = on ? part.userData.full : 0.1; part.material.depthWrite = on; }
     for (const lid of lids) lid.visible = on;
   }
@@ -264,6 +266,6 @@ export function createScene(canvas, model) {
 
   return {
     renderer, scene, camera, obstacles, floorObs: [], sectionMeshes, meshOf,
-    extent, tall, indoor, narrow, roofY, overview, setLights, setRoof, resize, render
+    extent, tall, indoor, narrow, roofY, overview, setLights, setRoof, roofOn: () => roofShown, resize, render
   };
 }

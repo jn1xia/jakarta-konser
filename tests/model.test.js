@@ -29,6 +29,7 @@ test('stats add up and leave out closed seats', () => {
 test('seat values from the address are clamped or replaced by the default', () => {
   assert.deepEqual(resolveSeat(m, 'ZZ', 999, -3), m.defaultSeat);
   assert.deepEqual(resolveSeat(m, undefined, undefined, undefined), m.defaultSeat);
+  for (const key of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) assert.deepEqual(resolveSeat(m, key, 1, 1), m.defaultSeat, key);
   const closed = m.sections.find((s) => s.cat === 'CLOSED');
   assert.deepEqual(resolveSeat(m, closed.id, 1, 1), m.defaultSeat);
   const r = resolveSeat(m, 'L-05', 999, 'abc'), sec = m.byId['L-05'];

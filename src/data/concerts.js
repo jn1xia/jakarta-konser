@@ -357,8 +357,9 @@ export const CONCERTS = [
   {
     id: 'thescript-indonesia-arena-2027', artist: 'The Script', tour: 'Man in the Arena Tour 2027',
     dates: ['2027-04-03'], venue: 'indonesia-arena', promoter: 'Color Asia Live',
-    genre: 'international', confidence: 'confirmed', priceFrom: 750000,
-    sources: ['https://jatim.antaranews.com/berita/1091933/simak-harga-dan-cara-beli-tiket-konser-the-script', 'https://www.cnnindonesia.com/hiburan/20260814112937-227-1392238/the-script-akan-konser-di-indonesia-arena-3-april-2027'],
+    // Outlets agree on "from Rp650.000"; the top price is quoted as Rp4,2 juta and as Rp2.950.000, so none is shown
+    genre: 'international', confidence: 'confirmed', priceFrom: 650000,
+    sources: ['https://jatim.antaranews.com/berita/1091933/simak-harga-dan-cara-beli-tiket-konser-the-script', 'https://www.medcom.id/hiburan/indis/GNGGr3AN-harga-tiket-konser-the-script-jakarta-2027-mulai-dari-rp650-ribu', 'https://www.cnnindonesia.com/hiburan/20260814112937-227-1392238/the-script-akan-konser-di-indonesia-arena-3-april-2027'],
     sim: {
       accuracy: 'estimated', theme: PHONE, performers: 3, stage: { preset: 'end' },
       categories: cats(

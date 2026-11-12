@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Jakarta Konser · poster promo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="poster.css">
+<style>
+/* ---------- Instagram 4:5, 1080 x 1350 ---------- */
+[data-size="feed"] .venue{position:absolute;left:0;right:0;top:560px;height:620px}
+[data-size="feed"] .venue-fade{inset:0;background:linear-gradient(#07070a 0%,rgba(7,7,10,.45) 25%,rgba(7,7,10,.45) 70%,#07070a 100%)}
+[data-size="feed"] .top{position:absolute;left:64px;right:64px;top:60px;display:flex;justify-content:space-between;align-items:center}
+[data-size="feed"] .headline{position:absolute;left:64px;top:150px;width:560px;font-size:112px}
+[data-size="feed"] .phone{right:76px;top:236px;height:790px;transform:rotate(4deg)}
+[data-size="feed"] .stats{position:absolute;left:64px;top:800px;width:520px;display:flex;justify-content:space-between}
+[data-size="feed"] .names{position:absolute;left:64px;right:64px;top:1070px;height:68px}
+[data-size="feed"] .cta{position:absolute;left:64px;right:64px;top:1162px}
+[data-size="feed"] .fine{position:absolute;left:64px;right:64px;bottom:44px}
+[data-size="feed"] .sub{position:absolute;left:64px;top:640px;width:520px;font:400 24px/1.42 var(--body);color:#ddd8e0}
+
+/* ---------- X 16:9, 1600 x 900 ---------- */
+[data-size="wide"] .venue{position:absolute;left:560px;right:0;top:0;bottom:0}
+[data-size="wide"] .venue-fade{inset:0;background:linear-gradient(90deg,#07070a 0%,rgba(7,7,10,.35) 30%,rgba(7,7,10,.2) 100%),linear-gradient(#07070a 0%,transparent 18%,transparent 82%,#07070a 100%)}
+[data-size="wide"] .top{position:absolute;left:72px;top:58px;display:flex;gap:28px;align-items:center}
+[data-size="wide"] .headline{position:absolute;left:72px;top:140px;width:760px;font-size:108px}
+[data-size="wide"] .sub{position:absolute;left:72px;top:520px;width:640px;font:400 24px/1.4 var(--body);color:#ddd8e0}
+[data-size="wide"] .phone{right:150px;top:60px;height:780px;transform:rotate(4deg)}
+[data-size="wide"] .stats{position:absolute;right:560px;top:300px;display:flex;flex-direction:column;gap:26px;text-align:right}
+[data-size="wide"] .stat b{font-size:80px}
+[data-size="wide"] .names{position:absolute;left:72px;top:604px;width:700px;height:84px;font-size:18px}
+[data-size="wide"] .cta{position:absolute;left:72px;top:712px;gap:20px}
+[data-size="wide"] .url{font-size:44px}
+[data-size="wide"] .fine{position:absolute;left:72px;bottom:34px;width:900px}
+[data-size="wide"] .cta-note{font-size:18px}
+[data-size="wide"] .eyebrow{font-size:17px}
+</style>
+</head>
+<body>
+<main class="poster">
+  <div class="venue" data-keep-in="venue"><img class="shot" src="../shots/venue.png" alt=""><div class="fade venue-fade"></div></div>
+
+  <header class="top" data-keep-in="top">
+    <p class="mark"><span>Jakarta</span><span>Konser</span></p>
+    <p class="eyebrow">Simulasi view kursi 3D</p>
+  </header>
+
+  <h1 class="headline" data-keep-in="headline">Cek view dari <span class="tape">kursimu</span> sebelum konser.</h1>
+  <p class="sub" data-keep-in="sub" data-fit="sub">Pilih konser, pilih kursi, lalu lihat panggung, layar, dan lautan lightstick persis dari tempat dudukmu.</p>
+
+  <div class="stats" data-keep-in="stats">
+    <p class="stat"><b data-fact="sims">12</b><span>konser 3D</span></p>
+    <p class="stat"><b data-fact="venues">6</b><span>venue</span></p>
+    <p class="stat"><b data-fact="listed">30+</b><span>jadwal</span></p>
+  </div>
+
+  <div class="phone" data-keep-in="phone"><img src="../shots/phone.png" alt=""></div>
+
+  <p class="names" data-keep-in="names" data-fit="names" data-fact="names"></p>
+
+  <div class="cta" data-keep-in="cta">
+    <span class="url">jakarta-konser.vercel.app</span>
+    <span class="cta-note">Gratis · tanpa daftar<br>langsung dari HP</span>
+  </div>
+  <p class="fine" data-keep-in="fine">Buatan penggemar · tidak resmi · tidak berafiliasi dengan artis, promotor, atau venue. Tata letak kursi adalah estimasi.</p>
+</main>
+<script type="module" src="poster.js"></script>
+</body>
+</html>

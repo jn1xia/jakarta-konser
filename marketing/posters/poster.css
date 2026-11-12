@@ -1,0 +1,70 @@
+/* Posters for Jakarta Konser, in the site's own look: near-black, stage-light yellow set like
+   gaffer tape, Archivo for headlines and IBM Plex Mono for facts. Every size is laid out on a
+   fixed pixel grid; render.cjs saves it at twice the size. */
+:root{
+  --void:#07070a;
+  --card:#111116;
+  --line:rgba(236,232,236,.16);
+  --ink:#f1eef0;
+  --muted:#a59fab;
+  --accent:#ffd84a;
+  --accent-ink:#0b0a0c;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--void);color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+html[data-size="feed"] body{width:1080px;height:1350px}
+html[data-size="wide"] body{width:1600px;height:900px}
+.poster{position:relative;width:100%;height:100%;overflow:hidden;font-family:var(--body);
+  background:
+    radial-gradient(900px 520px at 72% -10%,rgba(255,216,74,.16),transparent 70%),
+    radial-gradient(700px 420px at 0% 100%,rgba(120,150,255,.10),transparent 70%),
+    var(--void)}
+
+/* Brand mark: two strips of tape */
+.mark{display:flex;align-items:center;font:900 34px/1 var(--display);font-stretch:75%;text-transform:uppercase;letter-spacing:.01em}
+.mark span{display:inline-block;padding:.16em .34em .1em;background:var(--accent);color:var(--accent-ink)}
+.mark span+span{background:var(--ink);margin-left:-.1em;transform:rotate(-1.8deg) translateY(.06em)}
+.eyebrow{font:500 19px/1.3 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.headline{font:900 118px/.86 var(--display);font-stretch:66%;text-transform:uppercase;letter-spacing:-.004em}
+.headline .tape{display:inline-block;background:var(--accent);color:var(--accent-ink);padding:.04em .1em 0;margin:.02em 0;transform:rotate(-1.2deg)}
+
+/* A phone, drawn as a frame around a real screenshot */
+.phone{position:absolute;aspect-ratio:390/844;border-radius:46px;padding:12px;background:#1b1b21;
+  box-shadow:0 0 0 2px #2c2c34,0 40px 80px rgba(0,0,0,.65),0 0 120px rgba(255,216,74,.12)}
+.phone img{display:block;width:100%;height:100%;border-radius:35px;object-fit:cover}
+
+.shot{display:block;width:100%;height:100%;object-fit:cover}
+.fade{position:absolute;pointer-events:none}
+
+/* Facts */
+.stat b{display:block;font:900 92px/.9 var(--display);font-stretch:70%;color:var(--accent)}
+.stat span{display:block;margin-top:6px;font:500 21px/1.25 var(--data);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.names{font:500 21px/1.55 var(--data);color:var(--muted);letter-spacing:.02em;overflow:hidden}
+.names em{font-style:normal;color:var(--ink)}
+
+/* Call to action */
+.cta{display:flex;align-items:center;gap:22px}
+.url{display:inline-block;background:var(--accent);color:var(--accent-ink);font:800 50px/1 var(--display);font-stretch:85%;padding:.22em .36em .18em;border-radius:6px;white-space:nowrap}
+.cta-note{font:500 20px/1.4 var(--data);color:var(--ink);letter-spacing:.02em}
+.fine{font:400 15px/1.45 var(--data);color:var(--muted);letter-spacing:.02em}
+
+/* How-to steps */
+.step{position:absolute;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.step-head{display:flex;gap:16px;align-items:flex-start;padding:22px 24px 16px}
+.num{flex:none;display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:900 36px/1 var(--display)}
+.step h2{font:900 40px/1 var(--display);font-stretch:72%;text-transform:uppercase;letter-spacing:.005em;margin-top:2px}
+.step p{margin-top:8px;font:400 19px/1.38 var(--body);color:#d9d4dd}
+.step p b{font-weight:600;color:var(--ink)}
+.step-pic{position:relative;flex:1;min-height:0;margin:0 18px 18px;border-radius:12px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.step-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bar{position:absolute;left:12px;right:12px;top:12px;z-index:1;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;background:#1d1d24;border:1px solid #34343e;font:500 14px/1.2 var(--data);color:#e9e5ec;white-space:nowrap;overflow:hidden}
+.bar i{flex:none;width:12px;height:12px;border-radius:50%;border:2px solid #8c8792}
+.bar s{text-decoration:none;color:var(--accent)}
+
+.tips{display:flex;gap:12px}
+.tip{flex:1;padding:14px 16px;border:1px dashed rgba(236,232,236,.28);border-radius:12px;font:400 17px/1.35 var(--body);color:#d9d4dd}
+.tip b{display:block;font:600 14px/1.2 var(--data);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}

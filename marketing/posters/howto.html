@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Jakarta Konser · poster cara pakai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="poster.css">
+<style>
+/* Step pictures: which part of each screenshot to show */
+.pic-card img{object-fit:contain;padding:14px;background:#0c0c10}
+.pic-pick img{object-position:50% 0}
+.pic-seat img{object-position:30% 60%}
+.pic-share img{top:62px;height:calc(100% - 62px);object-fit:contain;object-position:50% 0}
+
+/* ---------- Instagram 4:5, 1080 x 1350 ---------- */
+[data-size="feed"] .top{position:absolute;left:56px;right:56px;top:52px;display:flex;justify-content:space-between;align-items:center}
+[data-size="feed"] .headline{position:absolute;left:56px;top:124px;font-size:118px}
+[data-size="feed"] .lede{position:absolute;left:718px;right:56px;top:140px;font:400 22px/1.4 var(--body);color:#ddd8e0}
+[data-size="feed"] .step{width:476px;height:404px}
+[data-size="feed"] .s1{left:56px;top:270px}   [data-size="feed"] .s2{left:548px;top:270px}
+[data-size="feed"] .s3{left:56px;top:690px}   [data-size="feed"] .s4{left:548px;top:690px}
+[data-size="feed"] .tips{position:absolute;left:56px;right:56px;top:1114px}
+[data-size="feed"] .cta{position:absolute;left:56px;right:56px;top:1222px;justify-content:space-between}
+[data-size="feed"] .url{font-size:44px}
+[data-size="feed"] .cta-note{font-size:17px;text-align:right}
+
+/* ---------- X 16:9, 1600 x 900 ---------- */
+[data-size="wide"] .top{position:absolute;left:60px;top:54px}
+[data-size="wide"] .headline{position:absolute;left:60px;top:130px;width:420px;font-size:116px}
+[data-size="wide"] .lede{position:absolute;left:60px;top:370px;width:400px;font:400 21px/1.42 var(--body);color:#ddd8e0}
+[data-size="wide"] .tips{position:absolute;left:60px;top:500px;width:400px;flex-direction:column;gap:10px}
+[data-size="wide"] .tip{padding:11px 14px;font-size:16px}
+[data-size="wide"] .cta{position:absolute;left:60px;top:790px;flex-direction:column;align-items:flex-start;gap:8px}
+[data-size="wide"] .url{font-size:34px}
+[data-size="wide"] .cta-note{font-size:15px}
+[data-size="wide"] .step{width:520px;height:398px}
+[data-size="wide"] .s1{left:504px;top:46px}   [data-size="wide"] .s2{left:1040px;top:46px}
+[data-size="wide"] .s3{left:504px;top:458px}  [data-size="wide"] .s4{left:1040px;top:458px}
+[data-size="wide"] .step-head{padding:18px 20px 12px}
+[data-size="wide"] .step h2{font-size:36px}
+[data-size="wide"] .step p{font-size:17px}
+[data-size="wide"] .num{width:52px;height:52px;font-size:32px}
+</style>
+</head>
+<body>
+<main class="poster">
+  <header class="top" data-keep-in="top"><p class="mark"><span>Jakarta</span><span>Konser</span></p></header>
+
+  <h1 class="headline" data-keep-in="headline">Cara <span class="tape">pakai</span></h1>
+  <p class="lede" data-keep-in="lede">Empat langkah untuk melihat panggung dari kursimu, langsung dari HP.</p>
+
+  <section class="step s1" data-keep-in="step 1">
+    <div class="step-head"><span class="num">1</span><div><h2>Pilih konser</h2><p data-fit="step 1 text">Buka <b>jakarta-konser.vercel.app</b>, cari konsernya, ketuk kartu bertanda <b>3D siap</b>.</p></div></div>
+    <div class="step-pic pic-card"><img src="../shots/card.png" alt=""></div>
+  </section>
+
+  <section class="step s2" data-keep-in="step 2">
+    <div class="step-head"><span class="num">2</span><div><h2>Pilih kursi</h2><p>Ketuk bagian di <b>denah</b>, atau pilih <b>bagian, baris, dan kursi</b> sesuai tiketmu.</p></div></div>
+    <div class="step-pic pic-pick"><img src="../shots/pick.png" alt=""></div>
+  </section>
+
+  <section class="step s3" data-keep-in="step 3">
+    <div class="step-head"><span class="num">3</span><div><h2>Lihat dari kursimu</h2><p><b>Geser</b> untuk melihat sekeliling, zoom <b>2× / 4×</b>, pilih <b>Duduk</b> atau <b>Berdiri</b>.</p></div></div>
+    <div class="step-pic pic-seat"><img src="../shots/seat.png" alt=""></div>
+  </section>
+
+  <section class="step s4" data-keep-in="step 4">
+    <div class="step-head"><span class="num">4</span><div><h2>Bagikan</h2><p>Alamat halaman <b>menyimpan kursimu</b>. Salin, kirim ke teman nonton.</p></div></div>
+    <div class="step-pic pic-share">
+      <div class="bar" data-fit="share bar"><i></i>…?c=enhypen-jis-2027&amp;<s>s=L-08&amp;r=10&amp;n=12</s></div>
+      <img src="../shots/now.png" alt="">
+    </div>
+  </section>
+
+  <div class="tips" data-keep-in="tips">
+    <p class="tip"><b>Seluruh venue</b>Lihat semua bagian dari atas, ketuk untuk duduk di sana.</p>
+    <p class="tip"><b>Lampu</b>Konser = lampu panggung, Terang = lampu stadion.</p>
+    <p class="tip"><b>Estimasi</b>Cocokkan kursimu dengan seat plan resmi.</p>
+  </div>
+
+  <div class="cta" data-keep-in="cta">
+    <span class="url">jakarta-konser.vercel.app</span>
+    <span class="cta-note">Gratis · tidak resmi<br>buatan penggemar</span>
+  </div>
+</main>
+<script type="module" src="poster.js"></script>
+</body>
+</html>

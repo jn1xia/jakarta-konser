@@ -195,3 +195,13 @@ To count on another host, add its name to `COUNTER.hosts` in `src/counter.js`.
 Fan-made and unofficial. Not affiliated with any artist, label, promoter or venue. The site uses no
 artist logos, photos or artwork; the figures on stage are generic stand-ins, not likenesses. It
 sells no tickets. three.js is © its authors, MIT licence (`vendor/THREE-LICENSE`).
+
+## Posters
+
+`marketing/` holds the promotional posters: `promo` (what the site is) and `howto` (four steps),
+each for Instagram (4:5) and X (16:9). The finished PNGs are in `marketing/out/`.
+
+`npm run posters` takes fresh screenshots of the site and renders all four again. The numbers on
+the promo poster (shows with a 3D view, venues, upcoming shows) come from `src/data/concerts.js`,
+so re-run it when the lineup changes. The script fails if any text overflows its box or anything
+runs off the poster.
